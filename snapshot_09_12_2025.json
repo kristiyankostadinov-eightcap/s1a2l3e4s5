@@ -1,0 +1,418 @@
+[
+    {
+        "asset_name": "Gold",
+        "symbol": "EIGHTCAP:XAUUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "35.860",
+            "open": "3,641.410",
+            "close": "3,633.700",
+            "high": "3,649.240",
+            "low": "3,613.380"
+        },
+        "related_news": [
+            {
+                "title": "Gold Surpasses Inflation-Adjusted Record High Set in 1980 - Bloomberg.com",
+                "source": "Bloomberg.com",
+                "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPNkRmekNKTVRfQVRJc0Rhc2RXWXQ0Rl90TEZjUUxQRElwOGxHazIzX1MzMXRpR3RiYkY5V0ZkUDN5amR0S0pmYWhLU3VJV0QyWVphR1hpQmNBUmhlYm9sa2FReFBnSnRGZFNCS2EzcXJndFI1T29oZndJU25nZW9KZmlwY2lyQnUxRlRKc0ZCN0RIdmVQbG50Ym1LUnU1WjQxcVJDRTJ4V3JHczhX?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Inflation rose to 2.9% in August. Here's why a gold investment makes sense now. - CBS News",
+                "source": "CBS News",
+                "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOU3JxZFJ6Y3Z2NGdzbG5vcEhBQjZGck56dXRGWTJtSXJvcU02Z19hRUh6ZW8xcWxEbzNLNm5Gb3E5UDVnaFRxQjZWS0FiZTJJZGJDZHg1NjNLWm5tZm9nWHZhRWVhRDV0eXV4VlVrckVoZkNmQV9zMGpJNGZHSEJKVnZ4T2RVLWduS2toazdJWHBZR09nTGJWZFZ3?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Gold Price Tops Inflation-Adjusted Record High Set in 1980 - Yicai Global",
+                "source": "Yicai Global",
+                "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQVEU2NHItLUhHV0RGTmtyQjNFMGhHQm5hYVFqN012bWJOemQwTV9keWczMzdNRHM2bDZ4U2dNM1dlcWhqM3ZhQUpxVE55d2ZUWFYzVFFLVWE5R1VmWE5xU2h0NUhzSVJ5Zzc4OHMyLXVfdm5LOEZQTTNSNm1tNVBETjQxRmpmOVBvZkpyR01QZ2JvSS12aFRpdTJwVGtSbW8yQ3c?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "Spot Brent Crude Oil",
+        "symbol": "EIGHTCAP:UKOUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "1.460",
+            "open": "67.895",
+            "close": "66.563",
+            "high": "67.915",
+            "low": "66.455"
+        },
+        "related_news": []
+    },
+    {
+        "asset_name": "Spot WTI Crude Oil",
+        "symbol": "EIGHTCAP:USOUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "1.575",
+            "open": "63.992",
+            "close": "62.532",
+            "high": "64.072",
+            "low": "62.497"
+        },
+        "related_news": []
+    },
+    {
+        "asset_name": "EUR/USD",
+        "symbol": "EIGHTCAP:EURUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "0.009",
+            "open": "1.169",
+            "close": "1.173",
+            "high": "1.175",
+            "low": "1.166"
+        },
+        "related_news": [
+            {
+                "title": "European indexes mixed while investors read Fed rate cut clues (EUR:USD:) - Seeking Alpha",
+                "source": "Seeking Alpha",
+                "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNR1ZfR0lkUVlXdzFRazZHX1lUMGdJSkMzLUZCX1UzaWcxcFFLRlF5d25sa3ZVa1FZd3g0S3dFampKLUgxT1lOTHRnM2RfQkI5NUhMYURlcl9qRGRZMzFlenQzR0prUjJXMG1EbnFwaG9lTlFoMmtJUkQ3VG1Edi1zTGx5QndIYUVyaHpvS1NKQ1NGYVN0Z252bW4xdmNsM1NQU2c?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "EUR/USD gives away gains amid a firmer Dollar on choppy trading - FXStreet",
+                "source": "FXStreet",
+                "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQQm5GVllObXV3NU1mUW9fT1FhY2pGNnZ4UGJjRlhGWHFDaDhJbFBGbHlfZkVRX3lBSlhDZzVBQW5Na1phd2hlNFJWSE1pbXJuLXBlV0F0T19kc2I3d2xDTGwwZkNjdV9pRDkwVTdpOV9mdHBQcE5yUmtCS1RuVGNNMXVLdmJ5TnBLWGR3RGx6Y1Y5bnBRYWg0cy1zUXlWRVVJUm1JcjNUMldSU25qX05hNnBfSdIBuAFBVV95cUxPUk54bTZ1amRlYWtPOTdWaDdGX1dIbkpGYm0wcTdFYkg1aGFlazE2ZEJMMzBHWEFhWW9OUVhBeURsUVRNWFFnM1NIa0wtSUZLMkJJU1RLaHJuVlQ1aEM3YkRRWlV2NzEySjdzSWpzcGFkU3lmZmNncnpNUVlndE5tS25DU2hSYlEyczR5djhaT1YzTkNRMmpHejZBYXBpSGUxbXdFZEsxM3F3cHF5Y3dRZTNJRHJhZF9G?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "FX Daily: Policy convergence raises EUR/USD potential - ING THINK economic and financial analysis | ING Think",
+                "source": "ING THINK economic and financial analysis | ING Think",
+                "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxObXJrdEtOdDVGS09GeHlqSlVVeVFhdnA3NjNZY1p6TGc4UmdTNy1xM19JUkNRTC10QXNoTmdKZGRKbkM4OUpoajI3WUZFbEctN2piQ0ZqX2pPX1QzVVZNbVBnbjNrSlhseDI0RnFTS0xKYWhBNkM4ME1FM214cFFjZFZqbUR5Q0xNTDM3dw?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "GBP/USD",
+        "symbol": "EIGHTCAP:GBPUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "0.006",
+            "open": "1.357",
+            "close": "1.355",
+            "high": "1.358",
+            "low": "1.352"
+        },
+        "related_news": [
+            {
+                "title": "GBP/USD outlook: Forex Friday September 12, 2025 - FOREX.com",
+                "source": "FOREX.com",
+                "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNS09OajZ5TUlzTkgzWGtnTXhDYzk5VjYxQXVteTk3WFdpSWp5VjRaWXRpdmZUN0JvOVI5UzJCdXUtQzN5ZkFzemlKMmg4dzRtNnNJVXhwbHdidHA0YW1qeXBKTEpaMjdaTGZNSnN6Q0dYS3lNQVpWUnFKeTh2Uy1mSkFWRGg0WU1xdUlLQXRVOUh4T1BhaXpVdFI0dkI1LXp1ZHd0cQ?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "GBP/USD outlook: Forex Friday September 12, 2025 - City Index UK",
+                "source": "City Index UK",
+                "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxOVThEUzBiMndsUm1YbnI4VjFBNVBhaDFzaFl5bzd3MkhWd1F6OXpaVmZhVXlPRFF6d1AxMnpXUVUxc2VmMVhNYnpianlzenJfSnRHdlgwS2sxd29WR1U2TExZNFk0VXRudFpmLXVPcXdrdmRjbGtFam14Q3htdVJxTFpqX2x2WjRNRTMxUGtYQm5UOHVfeHRJVlMtSU84UQ?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "GBP/USD Price Analysis: Sterling Recovers on Renewed Fed Cut Focus - Forex Crunch",
+                "source": "Forex Crunch",
+                "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOODVyLTJxVnBKeTVVTDZkekZCTWhzampCTVBnSTNDZHRwRnU5a1B3Tkp3Wm1jM3BTTjJNODl2ZTBtcUJNaGVyNzd6eHZxS0F6dTJFdjRKaDA0bnZPUmxQWW9wVjdyWlo5Y3hsQlpNZF83Z0xFNE0yN0UxMVdSV1RXOUhSbFl1cWUxa1lXOGpkTVlTN2FTU2lWdEFKdWVibklVdDg1ZEZFM2NoSXdmSGZV?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "AUD/USD",
+        "symbol": "EIGHTCAP:AUDUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "0.008",
+            "open": "0.661",
+            "close": "0.666",
+            "high": "0.666",
+            "low": "0.659"
+        },
+        "related_news": [
+            {
+                "title": "AUD/USD, NZD/USD: Antipodean surge meets limits of Fed cut bets - FOREX.com",
+                "source": "FOREX.com",
+                "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPOF8xWFJuVXBOb2lPV2tsSHJRMEpMMUN2YVlaOGdqOXV3R2lWVUNZSnJsbnF2WTVOQW5DcUUxVlp1bzJuYzEtMG5RS09jR1dYa01mVXZFeVY2UzhtTzIxc2lTS092Qi15WEhaVWVad2tPRGxNNzBTYm1LNFNUcDVWMmw1TmNDOWw4b0xKOFYtREh1VFNzb1lGcXNEVnZPZGVlRUMyeWpRSjlVY0kt?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "AUD/USD Price Forecast: Could appreciate further amid dovish Fed-inspired USD weakness - FXStreet",
+                "source": "FXStreet",
+                "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxOOE52RThuRF90d1pVY0pIaG0xSUtPdU0waEFYOXBBV2lGM3h0MzExUzBYTGVWMkFPWnphQ0JQY3QyUW84S0k3LWZxeVhDc3NJSVpiYk5FMzBfRE9aTXU3bEluSnhJTGYzMGE0c29TY1JlalpBUWdFSk1oTWx2MzgtX3Y4Ui0wVHF3NTdUaFRfNjQ3NGdYYWpwRXk5TTVxVlFTUkRJLTJsTXh3SzUyQVlvN3hBbno0aTZxWWQ2SHNWRnNYaEVUTnQ5NVMyb07SAdIBQVVfeXFMTzJlWGx0ejZic19zd056TlgyTWhzeUlGdGJkTkpoNkxIbEdjZVl4RG1FU21PS1dPWjd0YjBDQ1R3MVk2Uy0tTnlwYmRTM29DbEZfcUxKOFpBU0NTQ2tDMEhfNG44MVBacFIwZ3haaFl0M1d3c2p0dENQSGVyQVlmOEUzQ0h4dHhBRXVNVERrZ1NTUlJFUGhCOUdDYWZGTmNqOVBaRGtYeHFKbUlocTVicURXNE1yU1l1a2U5NmwteVJSUHNEM3NZZkU4TDY0bWdEbjFR?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Rabobank sees AUD/USD dipping to 0.65 before rallying to 0.89 in 12 months - investingLive",
+                "source": "investingLive",
+                "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNZTRpYXgwU2NjdUpuM3JTdloxaHRQa0ZrTXhNcHF0TVRmMTg0b3FLVVdCU1gyZHNrOHY4czkzQmRSam9UZDloOVFIdlVPWTFRdWNsS0xmdmRNZ2E1ejlBSC1VTng1Y0ZWX2E2RC1WR3JGTlgxZE5wQXBYR0RMMVZGTjFhWmc0WmxjMnZCckNPcndBcGx0T2xER2o5bVI4VzlVSUdxalJKZFBuMWFoZF8zTWRQWXRTSURvaE5B0gHAAUFVX3lxTFBzQVRuWFJCdTJGOGN1Rl9SaE9MazlNVHV5R0J6S3ViMTEzZFR6V3g4ekxBTjk5QjBjQnc4T1hiem90NW4yZlhxTTF1SmowM1dBemJ6cEc5WUhsZlR0QVQtUlpnZWt6MHd1bjF4a3hYSVBhS0lCOVFqbkd6dWh3MHlhVjNSMGpyQjlLRm9mWWtLNG1KWjc1cUE5SW43Z2huSTYxbXV5Z2FjcUdFWEdEV3MyWGMxcnB1MjVDNmNPUjEyVA?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "USD/JPY",
+        "symbol": "EIGHTCAP:USDJPY",
+        "status": "Success",
+        "data": {
+            "day_range": "1.186",
+            "open": "147.361",
+            "close": "147.201",
+            "high": "148.168",
+            "low": "146.982"
+        },
+        "related_news": [
+            {
+                "title": "Japanese Yen and Aussie Dollar Forecasts: USD/JPY Volatility Rises on BoJ and Election Risks - FXEmpire",
+                "source": "FXEmpire",
+                "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxNLVBxWDJpQmxyOGJvVURVRUtXdFRyVU9VeXFZTXVkNjZFT19keW03UGM1anhjc0FtbXpaLTVJRGpwb2ItN2N2Vm9XN2puTmtZV1JsZGhrbFhjZjRYSGtVSG1xdG1nQVFOUGZXdGE4R2gzTC1LZ3lpZjBnc21TR0RDZGdzbjJUUGdFczVyVXVvMDZpSDBoLWdzN2phanMzVEtjRF96QVpDQUlneEs3N3B5QUhkVHJTN1VydWVoX3NuWVpBbEFYSHVna29WLVpldTBfWkZjeHllYVlQUQ?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Japanese Yen struggles as political uncertainty and risk-on mood weigh - FXStreet",
+                "source": "FXStreet",
+                "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxOTlc1TFVzbnk1MWVRMkRvbUtacVd5TlBrS3NNcTRfM2xqdWlHWDVzQzE5eF9ZQk5aam50UzdMdkZfV3NPMHJNVENwLW9ySUZvaWNnTVN1N2wtWDl5TkRSNERXdEUwQnF4N2RaQjBEbE5yVExYRW9KTm5xaUNnS2xWZkstejAwU0Fsa1IxVGhlZnpvbTBORjJUM0paUXZ2eUc3blJPLVhxYUlvTC1iTk5VVWFZbEtBNURnYjRlTmNVTXdZQ2xaMV9PNnczSVDSAdIBQVVfeXFMTTNrM1lXSUhtLWpOa2hfMTIxSU9mMkhxSDBJQTRGMVJsYTZNRDNGWExlVUw2Rkx1VkdKT2paU3cwb3U1WFVVYW5hbjZTSDRyOVY2SHROc29uR09KUDJEZ0FpcDdzMDNSWGsyWGxONFBrUW9ONk5rb08weHE1UDA0ZG9YZ0xqVzBSSmY2U3BZb3hjWnZoNkg5Z0dXQS16YXBtUS1iMDF4SktKZTRZM21oNllYWC1SdDZ6V2VZMXNTRm9pQUxMUk82VUtmd2FfT1pjLUtn?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "AUD/USD, NZD/USD: Antipodean surge meets limits of Fed cut bets - FOREX.com",
+                "source": "FOREX.com",
+                "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPOF8xWFJuVXBOb2lPV2tsSHJRMEpMMUN2YVlaOGdqOXV3R2lWVUNZSnJsbnF2WTVOQW5DcUUxVlp1bzJuYzEtMG5RS09jR1dYa01mVXZFeVY2UzhtTzIxc2lTS092Qi15WEhaVWVad2tPRGxNNzBTYm1LNFNUcDVWMmw1TmNDOWw4b0xKOFYtREh1VFNzb1lGcXNEVnZPZGVlRUMyeWpRSjlVY0kt?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "USD/CAD",
+        "symbol": "EIGHTCAP:USDCAD",
+        "status": "Success",
+        "data": {
+            "day_range": "0.006",
+            "open": "1.386",
+            "close": "1.383",
+            "high": "1.389",
+            "low": "1.383"
+        },
+        "related_news": [
+            {
+                "title": "USD / CAD - Canadian dollar continues to slide - Baystreet.ca",
+                "source": "Baystreet.ca",
+                "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFA5c3ZOVVhVbEZFZ2ZIZFFpb2E2SVZFYnJjdEVRWE5NUGpKalJ6b0FielloQUV5VDFFcTBJb3FINjFEV0pjZnQ3RkNZbTdOZElxOGFjWmROY1lqcDZ4WWtBSg?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "USD/CAD Price Forecast: Corrects to near 1.3830 on US stagflation risks - FXStreet",
+                "source": "FXStreet",
+                "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQbTIzaFQ0cGhjbGJXVWloendvSnBmZW1HWXVqSjlkQWNxaDRrazFRNUJabzFkaVhIenlHal85SkxvRklKd3JQa1ZXcFplTUZPYVplN3M1SENoVmVuTHQ0bDRvZER2T29Jdkotc2ZGeHJkRGVHemlJRXV4bGNwTnpxQThhMm5kUzFlQ05DLUtlR0RweHVRdV8xXzJhVFNPU0l0N2Fxd3pDVFNfb3UtRDVlSGtR0gG3AUFVX3lxTE1PUmRnZkpQZWZCRDNxdHgwaUtKZDJzZlU0RFlua3hobmg4X1dqVDA2aTlVOHl1X2RLakdFdmhYYzlZRm9MR0U1TzNlZXE5a1NTd2o1N093OFA2dnp6bVJyZ3psY2daZi1HSnlJZnJPQTNWZjhjZVBER0ZtbXN2aHR6a21Nam1sRVkzSjBPT05ob3VXd2pxWjZxR2RSOWU2VUdxX0JGR1VZMTA0aHZvanRBckhRcUF6WQ?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Bank of Canada Set To Resume Rate Cuts - Seeking Alpha",
+                "source": "Seeking Alpha",
+                "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxPLXZYM3BxNUNjQjBzNEIxTl9jalRmaGs1SXZpbThnZlRhWDcwbnA5X2pxS0pKNktoUDJvNmtGNXdlTnNsRWtDMW5zNzhsVUJIU3pRY0xFQ0Y3dEZETTVsNTRRZkZtZkZBUFgxN3lRT3p1b01WbGtJa0l5djhsY2hucnlua1JXNkZ6ODJvVVpJXzI3cVlPbHlVcHQ3Y0h4NzA?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "GBP/JPY",
+        "symbol": "EIGHTCAP:GBPJPY",
+        "status": "Success",
+        "data": {
+            "day_range": "0.836",
+            "open": "199.316",
+            "close": "199.799",
+            "high": "200.065",
+            "low": "199.229"
+        },
+        "related_news": [
+            {
+                "title": "Japan to restrict exports to some entities in China, Turkey over sanctions against Russia - FXStreet",
+                "source": "FXStreet",
+                "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxQdXRKVzBIdS0tTTNUVU1iYnc2QlBITXkwQjRickF1THU3akJMT25aUHVxUXhKcndJaHQ0RWhVRzhISkwyNUg5TjNONTQ4SFJRWFZtc2hmbGRCSFhyaGpiSmRIaUlJNjZBSmRQQVpUVnRaS1A2MmcwdWF0eW5wT2tKSndkZE80T0V6LXZhemlxdjlwbkRBNjdCeGFXVEs3b2NlZ3VMcDZvZ0JfWjE0alF0d0ZMMEV0UEdRclVJS2VLTDdOcF95cHUyZnRSLWdJQ1Rj0gHQAUFVX3lxTFB1dEpXMEh1LS1NM1RVTWJidzZCUEhNeTBCNGJyQXVMdTdqQkxPblpQdXFReEpyd0lodDRFaFVHOEhKTDI1SDlOM041NDhIUlFYVm1zaGZsZEJIWHJoamJKZEhpSUk2NkFKZFBBWlRWdFpLUDYyZzB1YXR5bnBPa0pKd2RkTzRPRXotdmF6aXF2OXBuREE2N0J4YVdUSzdvY2VndUxwNm9nQl9aMTRqUXR3RkwwRXRQR1FyVUlLZUtMN05wX3lwdTJmdFItZ0lDVGM?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "GBP/JPY Price Forecast: Positive bias persists near YTD high at 200.00 - FXStreet",
+                "source": "FXStreet",
+                "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPbGdaQ2VrT3RXbFh4UTBZTWxCSzQwbm4teVBsMWFhSlBHN0NVampHazRaT2E4TGhoYVd6ZmNDOFhTT1lPenh6M1Bmb0drV2hDQjRwek5FZFkwaFoyUEV0Q21NMW9Ja1dKcy14LURMTWRwTGhwNERpSHV3ZEQ0dXZHODJuNXJGbHBXV2MwUWI0QnFJdEJialU5UWRoS3ZPZnE4c1RhU3dzT19wd2FQZGY4OE5aNUpLX1XSAbwBQVVfeXFMUG9Nc3QwRklfQllPRV9ocjZVcDRsWm02bVBkWlZuXzFONUZtS3hkVzJZVkFQS19CTGwtTC1EV1FIek4wbTJmNFhyWFR4dW1NeHNLd0Y5N3VlU2lBRmhLUGFZZHhQOFo5TGlxVUVHczhLS1hLRk1zN0djbWM1UlVBSmxOR3NHbEQ0VHFhU2ZZdE5ORnBTbzBmc0MwbEZLWkhwTTJnRnZPMGdZMHBvTTVsMHpEbzRpalVwZmNrejU?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Pound Sterling faces pressure on UK GDP growth remaining stagnant in August - FXStreet",
+                "source": "FXStreet",
+                "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPTi1jVmFueTBoQXNjQ2xpU2c0QXZXSDRxQWFRRjdhMHlST0tuN3dkVWpWZjRuMm4tdzZUYlBrd2NwRUo2dHl0OU9oSkt5V21lcjlfM0FoMlprdk1oVEwyWkRURmI4UUhNei1tdmFNQnhmYjk3SllyYzFFMkR5bW5WcjNFVjFDUTYxZFdqU2NBRHNEZDB5WXFrNzFDRWxiYnBfdmtVZFhscnFoWXpxMWRUVlk3a050WDUzb1RPRE5mZ9IBvwFBVV95cUxPTi1jVmFueTBoQXNjQ2xpU2c0QXZXSDRxQWFRRjdhMHlST0tuN3dkVWpWZjRuMm4tdzZUYlBrd2NwRUo2dHl0OU9oSkt5V21lcjlfM0FoMlprdk1oVEwyWkRURmI4UUhNei1tdmFNQnhmYjk3SllyYzFFMkR5bW5WcjNFVjFDUTYxZFdqU2NBRHNEZDB5WXFrNzFDRWxiYnBfdmtVZFhscnFoWXpxMWRUVlk3a050WDUzb1RPRE5mZw?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "BTC/USD",
+        "symbol": "EIGHTCAP:BTCUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "1,313.000",
+            "open": "113,614.500",
+            "close": "114,439.250",
+            "high": "114,749.250",
+            "low": "113,436.250"
+        },
+        "related_news": [
+            {
+                "title": "Former SEC Chair Gary Gensler's Texts From Crypto's Most Pivotal Year Went Missing\u2014IT 'Avoidable Errors' Are Blamed - Yahoo Finance",
+                "source": "Yahoo Finance",
+                "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQelNWWUlFZU9NWVY1SjVDT2JnczFmMEZ4WjdYRjdITTN3Uk40SHhoYWlDTU4tTXk1TmlsZlVBb01JV013NERlMmdmak1BbkdERnJDUENOY01qN2hsR0lhWHFQT3NyaVVBMmFmUVRUMVpaRHhMbDhDYmxMZjFtV0MxdFdn?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Bitcoin Price BTC-USD Hits $114,482 as ETF Inflows Surge and Fed Cut Looms - tradingnews.com",
+                "source": "tradingnews.com",
+                "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9WajlnWWw4eGNRVkRhVTJxREhOLWFpbXE3elIwVUF3YnpsVDIyelNGd01DTTNBOVZHMUhhX0RIcVlUV3hraUtVMklNODVJWTlpRmJ4Z0d0T0puRlo5em9wMjVVdFpaYzN4MlUtdVZwZkRBbGM?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Coinbase Demands Answers After SEC Deletes Gensler Texts - 99Bitcoins",
+                "source": "99Bitcoins",
+                "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxPcHQtTTl6Y0tPNzJlVl96eXFZU3JVdDJoSk1QQVZSbEJ3OEhmQjNaNkItMkZwTDVUNmY1aVNLN3AyXzB1YUVzUzIzMXp6bHYxTGl0TXhGM0ZEb1J2LWVmcjJBc19RWWU3QUc0Z1BYVm9WTkVIY3BDZ21yRlBIeldwVDJQNnV4RlZxeElZd1VCOG9sS1pkc0F5Y000RDZnUQ?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "ETH/USD",
+        "symbol": "EIGHTCAP:ETHUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "152.050",
+            "open": "4,328.480",
+            "close": "4,416.570",
+            "high": "4,479.250",
+            "low": "4,327.200"
+        },
+        "related_news": [
+            {
+                "title": "DeFi Protocol Ondo Finance's Token Soars Amid Tokenization Hype - Yahoo Finance",
+                "source": "Yahoo Finance",
+                "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPMjRJUVNuSXlQWlU0SlVsWXFSOE1ZN2Y1dy1QalBUQmJqTXB6S0V5WWsyT29JT0dFaWZzV1Q1Z0VabjVSeWRsVXVaUXpUSGdQWmhqLVFLY1JHTnM5U3lLWmh5UGNKd0hpSVN6bVRYZ3NQdm5aSzd0emlVNE5IVkRXeVAtTVdEdw?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Ethereum Price Forecast - ETH-USD Holds $4,430 as ETFs Drive Breakout Toward $6K\u2013$8K - tradingnews.com",
+                "source": "tradingnews.com",
+                "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPc19vR2piTjZPM2dmZlBPSnJRclRkTmdhMGpzbHdpWjFHREstNDlOV2lfaERWNHo4UUZPLTJMYnJkRTgxQ2xhcnhIMHBLM3hmanB5TzI0dVZZN21TNnRzYl9rNGY2WWZ3NEpXWUlyTkIyVTZCNWlQcGU1V2E0S2xpSzhiUHBjUQ?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "U.S. Bitcoin and Ethereum spot ETFs both record net inflows - bloomingbit",
+                "source": "bloomingbit",
+                "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE12c2hoMmdFTHZ4UURWcVhPOEYyTWU3eTU5OEN0bXRnRVQ2QVdHMHZWZjF0VXdnMFl0Yy1uZzNlLXg3bmhSQi1MNmF5R0hmRzZxdk9r?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "SOL/USD",
+        "symbol": "EIGHTCAP:SOLUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "7.100",
+            "open": "222.410",
+            "close": "225.470",
+            "high": "228.720",
+            "low": "221.620"
+        },
+        "related_news": [
+            {
+                "title": "Mercurity Fintech Holding: Regulatory Headwinds Threaten On-Chain Hopes (NASDAQ:MFH) - Seeking Alpha",
+                "source": "Seeking Alpha",
+                "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxORW1QZnBFcG5XT25aZnY5ZHl6Nk03bkVoMm9sT0dVcjI2WTBXSzlTVHZNb3VRWnVIM2dteHptZ2FXUUx2YmJxNXNUXy1oNVhMWUFXRWdlV202MXFGbFpaLWNkNmV5WG5PZ2tOcXpRYzJLc18tdnJyV2c1SVZGZkpWMk9vVFEwLWhibGtNOHJzczhIbTFLaWJYaDR6d0xDTnpGNDE1OGx6Z2RKNGVQYmdWbTFTZ3FXNFJvNkt2V3VGRXNkUjJpb3NybFhR?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Experts Say SOL USD To $400: But is Solana Price Prediction a Bull Trap? - 99Bitcoins",
+                "source": "99Bitcoins",
+                "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxPSGVaVTJ6OGh2VXhhLVVqbTdUblpGTVk5RmR1aDhobG5qNVBvRE85N3dMUXBUWkRuMWY4WDBMZXhWNnl5TTBJSjdjQ0w3cUVnbkdVZXBLV09fTGxYSXNodERXcng5OURlbnc4aFZJMDZETVZYTkVZZEhMQ2F1U0ZzSXJYTXJPbW9ya0RwLW9USllTTlhxcWFxT043ODE1UGNUSWZzS0VUWkY1RDQ?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Solana Price Prediction: Bitwise CIO Says \u2018Solana Season\u2019 Is Just Weeks Away \u2013 How High Can SOL Go? - CryptoRank",
+                "source": "CryptoRank",
+                "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxORkZaT3JxcmNRWnpzNG1NQUlrcnR6RzdaVTE2dmExWWVmX1VkczhQeVJwX29sbmtGSzcwVTAtclZSQ2VTbGlzMG03Ymg2a3FFUmdwdVo3elFrTjVUZHRodF85NjFfcExPdEE5cHd2cmd2TmNwa05nZFVWNzNaU3hQbEpWUG4xc0RrbC1pdXl4UXlaTVY2ZXlxTWt0MlktOGlvdXdQRWdXTEJvUmNJblp3QW1OeDkxM3l1RUQ3UlFjWTZQdzdna3Y5em1HQQ?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "US30",
+        "symbol": "EIGHTCAP:US30",
+        "status": "Success",
+        "data": {
+            "day_range": "664.850",
+            "open": "45,493.250",
+            "close": "46,122.130",
+            "high": "46,153.350",
+            "low": "45,488.500"
+        },
+        "related_news": [
+            {
+                "title": "US30 gains 1.3% reaching new all-time high \ud83d\udcc8 - XTB",
+                "source": "XTB",
+                "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPYVJmRW8ycGN0cno0dEg5R1FZN3M1VnpuYkY1OUJPMjFxVzJWejQxRUtndkRmYlhDbjNfMzBlZHJTc3pxNjNHM0tBREFxR25JeWtQYUxSeTk1a2JWd3VUQVRscDdUQjZKeXlLNnE2QzdRSnc5V1M3bGZoZXpFRlZNblJHMFRmVllLMENidGV0RFo3MTBWcUVidk5jVkxKNXha?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "UK100",
+        "symbol": "EIGHTCAP:UK100",
+        "status": "Success",
+        "data": {
+            "day_range": "82.700",
+            "open": "9,251.520",
+            "close": "9,318.720",
+            "high": "9,320.720",
+            "low": "9,238.020"
+        },
+        "related_news": []
+    },
+    {
+        "asset_name": "GER40",
+        "symbol": "EIGHTCAP:GER40",
+        "status": "Success",
+        "data": {
+            "day_range": "234.500",
+            "open": "23,622.490",
+            "close": "23,755.490",
+            "high": "23,791.740",
+            "low": "23,557.240"
+        },
+        "related_news": []
+    },
+    {
+        "asset_name": "NDX100",
+        "symbol": "EIGHTCAP:NDX100",
+        "status": "Success",
+        "data": {
+            "day_range": "188.120",
+            "open": "23,839.860",
+            "close": "23,986.520",
+            "high": "24,026.480",
+            "low": "23,838.360"
+        },
+        "related_news": []
+    },
+    {
+        "asset_name": "SPX500",
+        "symbol": "EIGHTCAP:SPX500",
+        "status": "Success",
+        "data": {
+            "day_range": "63.780",
+            "open": "6,532.490",
+            "close": "6,587.150",
+            "high": "6,595.410",
+            "low": "6,531.630"
+        },
+        "related_news": [
+            {
+                "title": "Rayeiris Maduro Rondon @Rayeiris: \"\ud835\ude3c\ud835\ude65\ud835\ude65\ud835\ude61\ud835\ude5a'\ud835\ude68 \ud835\ude5a\ud835\ude6b\ud835\ude5a\ud835\ude63\ud835\ude69: \u1d04\u1d00\u0274 \u1d1b\u029c\u1d07 \u0274\u1d07\u1d21 \u026a\u1d18\u029c\u1d0f\u0274\u1d07...\" - eToro",
+                "source": "eToro",
+                "url": "https://news.google.com/rss/articles/CBMickFVX3lxTFBkbWZvTy1WTG1KQ0gzMGtWVDZkU1lCRmVzNmZaanYtRXBybWt0M0RPV2g5WldYT01jMDB5cWEyRmlVVjRNdlNOY1M1NDRkaWlsWXdiVTdEM0IyV2Q2VWk1Q19Vd2Q2eldnU010OGZZb3dNUQ?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "Demetris Theodoulou @Demtheo27: \"History Serves As a Reference,...\" - eToro",
+                "source": "eToro",
+                "url": "https://news.google.com/rss/articles/CBMickFVX3lxTE9ESzVpUnl4cTRWUW1nZDlDdHgtMGxNaXowRFFOeFU0eWljUVFxMi11MVRkc3lVclRzcG95b2MzYXFLalpVSFBrRnFlZ25DUllaMUFGdEhIYjlWY3MxWGdYbVFURExlZ19YekplcmRuQXRKZw?oc=5&hl=en-US&gl=US&ceid=US:en"
+            },
+            {
+                "title": "SPX500\u2019s Primary Trend is Up, the Index is Overbought in the Short-Term - FXCM Markets",
+                "source": "FXCM Markets",
+                "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNbWFnQnNPYXdxb3ZqQ01nM1g4RFhPbmp1dnMxa0lRcUxzMnZaVmNZcURCckE0RTFfQzZ3NDBOOEFpcEE2cklsTnI3Z3g4Q3dtRm9fLXM5Qm5hZE1YQ2w5TEs3MHlEb1FhMnhwQm00a29fcG1EV0dVWTVIOUtsb1pPVXlMdWYwUmtaeVNUMzQyc2FwT2U5cXlXOGRtQkF4eElVdVdOdEFnV1lZUzU5cFB4RWFB?oc=5&hl=en-US&gl=US&ceid=US:en"
+            }
+        ]
+    },
+    {
+        "asset_name": "JPN225",
+        "symbol": "EIGHTCAP:JPN225",
+        "status": "Success",
+        "data": {
+            "day_range": "990.000",
+            "open": "43,814.650",
+            "close": "44,758.940",
+            "high": "44,804.650",
+            "low": "43,814.650"
+        },
+        "related_news": []
+    }
+]
