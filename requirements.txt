@@ -1,0 +1,9 @@
+playwright
+gnews
+beautifulsoup4
+lxml
+trafilatura
+requests
+python-dotenv
+mkdocs
+mkdocs-material

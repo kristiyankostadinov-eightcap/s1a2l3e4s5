@@ -1,0 +1,133 @@
+{
+  "news_config": {
+    "ai_model": "deepseek/deepseek-chat-v3.1:free"
+  },
+  "assets": [
+    {
+      "name": "Gold", "symbol": "EIGHTCAP:XAUUSD",
+      "search_queries": [
+        "(Gold OR XAUUSD) AND (inflation OR \"interest rates\" OR \"Federal Reserve\" OR \"US dollar\")",
+        "Gold price"
+      ]
+    },
+    {
+      "name": "Spot Brent Crude Oil", "symbol": "EIGHTCAP:UKOUSD",
+      "search_queries": [
+        "(\"Brent Crude\" OR Oil) AND (OPEC OR \"oil supply\" OR inventories OR \"Middle East\")",
+        "Brent Crude price"
+      ]
+    },
+    {
+      "name": "Spot WTI Crude Oil", "symbol": "EIGHTCAP:USOUSD",
+      "search_queries": [
+        "(\"WTI Crude\" OR Oil) AND (OPEC OR \"oil supply\" OR inventories OR shale OR Cushing)",
+        "WTI price"
+      ]
+    },
+    {
+      "name": "EUR/USD", "symbol": "EIGHTCAP:EURUSD",
+      "search_queries": [
+        "(\"EUR/USD\" OR \"Euro Dollar\") AND (ECB OR Lagarde OR Fed OR FOMC OR inflation)",
+        "EUR/USD analysis"
+      ]
+    },
+    {
+      "name": "GBP/USD", "symbol": "EIGHTCAP:GBPUSD",
+      "search_queries": [
+        "(\"GBP/USD\" OR \"Pound Dollar\") AND (\"Bank of England\" OR BoE OR \"UK politics\" OR Fed)",
+        "GBP/USD analysis"
+      ]
+    },
+    {
+      "name": "AUD/USD", "symbol": "EIGHTCAP:AUDUSD",
+      "search_queries": [
+        "(\"AUD/USD\" OR \"Aussie Dollar\") AND (RBA OR \"China economy\" OR \"commodity prices\")",
+        "AUD/USD analysis"
+      ]
+    },
+    {
+      "name": "USD/JPY", "symbol": "EIGHTCAP:USDJPY",
+      "search_queries": [
+        "(\"USD/JPY\" OR \"Dollar Yen\") AND (\"Bank of Japan\" OR BoJ OR \"yield curve control\")",
+        "USD/JPY analysis"
+      ]
+    },
+    {
+      "name": "USD/CAD", "symbol": "EIGHTCAP:USDCAD",
+      "search_queries": [
+        "(\"USD/CAD\" OR Loonie) AND (\"Bank of Canada\" OR BoC OR \"oil prices\")",
+        "USD/CAD analysis"
+      ]
+    },
+    {
+      "name": "GBP/JPY", "symbol": "EIGHTCAP:GBPJPY",
+      "search_queries": [
+        "(\"GBP/JPY\" OR \"Pound Yen\") AND (\"Bank of England\" OR \"Bank of Japan\" OR \"risk sentiment\")",
+        "GBP/JPY analysis"
+      ]
+    },
+    {
+      "name": "BTC/USD", "symbol": "EIGHTCAP:BTCUSD",
+      "search_queries": [
+        "(Bitcoin OR BTC) AND (\"crypto regulation\" OR SEC OR \"Bitcoin ETF\" OR halving)",
+        "Bitcoin price"
+      ]
+    },
+    {
+      "name": "ETH/USD", "symbol": "EIGHTCAP:ETHUSD",
+      "search_queries": [
+        "(Ethereum OR ETH) AND (\"crypto regulation\" OR SEC OR DeFi OR \"gas fees\")",
+        "Ethereum price"
+      ]
+    },
+    {
+      "name": "SOL/USD", "symbol": "EIGHTCAP:SOLUSD",
+      "search_queries": [
+        "(Solana OR SOL) AND (outage OR ecosystem OR DeFi OR NFTs)",
+        "Solana price"
+      ]
+    },
+    {
+      "name": "US30", "symbol": "EIGHTCAP:US30",
+      "search_queries": [
+        "(\"Dow Jones\" OR US30) AND (\"US economy\" OR earnings OR \"non-farm payroll\" OR \"Fed policy\")",
+        "Dow Jones Industrial Average"
+      ]
+    },
+    {
+      "name": "UK100", "symbol": "EIGHTCAP:UK100",
+      "search_queries": [
+        "(\"FTSE 100\" OR UK100) AND (\"UK economy\" OR \"Bank of England\" OR Brexit)",
+        "FTSE 100"
+      ]
+    },
+    {
+      "name": "GER40", "symbol": "EIGHTCAP:GER40",
+      "search_queries": [
+        "(DAX OR GER40) AND (\"German economy\" OR ECB OR \"European industry\")",
+        "German DAX"
+      ]
+    },
+    {
+      "name": "NDX100", "symbol": "EIGHTCAP:NDX100",
+      "search_queries": [
+        "(\"Nasdaq\" OR \"tech stocks\") AND (earnings OR semiconductors OR Fed OR \"interest rates\")",
+        "Nasdaq 100"
+      ]
+    },
+    {
+      "name": "SPX500", "symbol": "EIGHTCAP:SPX500",
+      "search_queries": [
+        "(\"S&P 500\" OR \"US stocks\") AND (\"market sentiment\" OR GDP OR CPI OR inflation OR Fed)",
+        "S&P 500 index"
+      ]
+    },
+    {
+      "name": "JPN225", "symbol": "EIGHTCAP:JPN225",
+      "search_queries": [
+        "(Nikkei OR JPN225) AND (\"Japanese economy\" OR \"Bank of Japan\" OR yen)",
+        "Nikkei 225"
+      ]
+    }
+  ]
+}

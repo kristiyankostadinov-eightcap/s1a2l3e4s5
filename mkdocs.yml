@@ -1,0 +1,17 @@
+site_name: "Daily Market Briefings"
+theme:
+  name: "material"
+  palette:
+    # Light mode
+    - scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    # Dark mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+nav:
+  - 'Home': 'index.md'
+docs_dir: 'snapshots' # Tell MkDocs to look for Markdown files here
