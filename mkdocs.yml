@@ -1,17 +1,25 @@
 site_name: "Daily Market Briefings"
+site_url: "https://kristiyankostadinov-eightcap.github.io/s1a2l3e4s5/" # Add your site URL
+
 theme:
   name: "material"
+  features:
+    - navigation.tabs
+    - navigation.top
   palette:
-    # Light mode
     - scheme: default
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
-    # Dark mode
     - scheme: slate
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
-nav:
-  - 'Home': 'index.md'
-docs_dir: 'snapshots' # Tell MkDocs to look for Markdown files here
+
+# This is the crucial part for auto-navigation
+plugins:
+  - search
+  - awesome-pages
+
+# Tell MkDocs that your markdown files are in the 'snapshots' folder
+docs_dir: 'snapshots'

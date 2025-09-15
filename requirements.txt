@@ -7,3 +7,4 @@ requests
 python-dotenv
 mkdocs
 mkdocs-material
+mkdocs-awesome-pages-plugin
