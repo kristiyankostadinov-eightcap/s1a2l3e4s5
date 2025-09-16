@@ -6,8 +6,15 @@ theme:
 
 plugins:
   - search
-  # This plugin will now automatically create a nested sidebar from your folder structure.
   - awesome-pages
 
-# Tell MkDocs where to find all the content.
 docs_dir: 'snapshots'
+
+# --- THE FIX IS HERE ---
+# This new section controls the Table of Contents depth.
+markdown_extensions:
+  - toc:
+      # This tells the theme to only include h2 (##) and h3 (###) headings.
+      # Since your asset names are h2, this will give you the clean list you want.
+      permalink: true
+      toc_depth: 2

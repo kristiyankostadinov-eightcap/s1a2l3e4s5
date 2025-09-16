@@ -22,48 +22,42 @@ def log(message):
     """Prints a message with a timestamp."""
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
 
-def prime_google_context(context: BrowserContext):
-    """
-    FINAL v2: A simpler and more patient function to prime the Google context.
-    It clicks the consent button and then simply waits for the page to settle.
-    """
-    log("Priming Google context to handle consent wall...")
-    page = None
-    try:
-        page = context.new_page()
-        page.goto("https://news.google.com", wait_until='domcontentloaded', timeout=30000)
-        
-        if "consent.google.com" in page.url:
-            log("   -> Google consent page detected. Clicking 'Accept all'...")
-            page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=10000)
-            log("   -> 'Accept all' clicked. Waiting for 3 seconds for page to stabilize...")
-            page.wait_for_timeout(3000) # Simple, robust wait.
-            log("   -> Context should now be primed.")
-        else:
-            log("   -> No consent page detected. Context is likely already primed.")
-    except Exception as e:
-        log(f"   -> An error occurred while priming Google context: {e}")
-    finally:
-        if page: page.close()
-
-def resolve_google_redirect(url: str, context: BrowserContext) -> str:
-    """A simple function to resolve redirects using the already-primed Google context."""
+def resolve_google_redirect(url: str, browser: Browser) -> str:
+    """Creates a clean, isolated context for every redirect to ensure stability."""
     final_url = None
-    page = None
+    context = None
     try:
+        user_agent_string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+        context = browser.new_context(user_agent=user_agent_string)
         page = context.new_page()
         page.goto(url, wait_until='domcontentloaded', timeout=20000)
-        page.wait_for_timeout(2000)
+        
+        if "consent.google.com" in page.url:
+            log("      -> Google consent page detected. Searching for 'Accept all' button...")
+            try:
+                page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=3000)
+                log("      -> Clicked 'Accept all' on the main page.")
+            except TimeoutError:
+                log("      -> Button not on main page. Searching within iframes...")
+                found_in_iframe = False
+                for frame in page.frames:
+                    try:
+                        frame.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=2000)
+                        log("      -> Clicked 'Accept all' inside an iframe."); found_in_iframe = True; break
+                    except TimeoutError:
+                        continue
+                if not found_in_iframe: log("      -> Could not find the 'Accept all' button in any frame.")
+            log("      -> Waiting for redirect to complete...")
+            page.wait_for_load_state("networkidle", timeout=15000)
+
         final_url = page.url
         if "google.com" in final_url:
-            log(f"      -> FAILED to resolve redirect. Still on a Google domain: {final_url}")
-            return None
+            log(f"      -> FAILED to resolve redirect. Still on a Google domain: {final_url}"); return None
         log(f"      -> Redirect resolved: {final_url}")
     except Exception as e:
-        log(f"      -> FAILED to resolve redirect for {url}. Reason: {e}")
-        return None
+        log(f"      -> FAILED to resolve redirect for {url}. Reason: {e}"); return None
     finally:
-        if page: page.close()
+        if context: context.close()
     return final_url
 
 def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_symbol: str):
@@ -73,13 +67,11 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         context = browser.new_context()
         page = context.new_page()
         page.set_viewport_size({"width": 1920, "height": 1080})
-        
         log(f"Processing Price Data for {asset_name}...")
         page.goto(f"https://www.tradingview.com/chart/?symbol={asset_symbol.replace(':', '%3A')}", wait_until="networkidle", timeout=90000)
         
         try:
-            page.get_by_role("button", name="Accept all").click(timeout=7000)
-            log("Cookie banner accepted.")
+            page.get_by_role("button", name="Accept all").click(timeout=7000); log("Cookie banner accepted.")
         except TimeoutError:
             log("No cookie banner found or it timed out.")
 
@@ -87,10 +79,8 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         chart_box = chart_area.bounding_box()
         if chart_box:
             chart_area.click(position={'x': chart_box['width'] * 0.9, 'y': chart_box['height'] * 0.5})
-        
         try:
-            page.get_by_role("button", name="Got it!").click(timeout=7000)
-            log("'Got it!' popup closed.")
+            page.get_by_role("button", name="Got it!").click(timeout=7000); log("'Got it!' popup closed.")
         except TimeoutError:
             log("No 'Got it!' popup found or it timed out.")
 
@@ -103,12 +93,9 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
                 ohlc = {"open": float(o_text[1:].replace(",", "")), "high": float(h_text[1:].replace(",", "")), "low": float(l_text[1:].replace(",", "")), "close": float(c_text[1:].replace(",", ""))}
                 log(f"   -> OHLC values detected: {ohlc}")
                 return ohlc
-            except Exception:
-                return None
+            except Exception: return None
 
-        log("Finding the most recent historical candle...")
-        chart_area.press('Home'); page.wait_for_timeout(500)
-
+        log("Finding the most recent historical candle..."); chart_area.press('Home'); page.wait_for_timeout(500)
         last_known_close = 0.0
         for i in range(250):
             chart_area.press('ArrowRight'); page.wait_for_timeout(50)
@@ -120,10 +107,8 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
                 last_known_close = current_close
         
         chart_area.press('ArrowLeft'); page.wait_for_timeout(500)
-        
         final_ohlc = get_ohlc_values()
         if not final_ohlc: raise Exception("Failed to retrieve final OHLC values.")
-
         day_range = final_ohlc['high'] - final_ohlc['low']
         return {"asset_name": asset_name, "symbol": asset_symbol, "status": "Success", "data": {"day_range": f"{day_range:,.3f}", "open": f"{final_ohlc['open']:,.3f}", "close": f"{final_ohlc['close']:,.3f}", "high": f"{final_ohlc['high']:,.3f}", "low": f"{final_ohlc['low']:,.3f}"}}
     except Exception as e:
@@ -132,54 +117,44 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
     finally:
         if context: context.close()
 
-def fetch_and_scrape_news(browser: Browser, google_context: BrowserContext, search_queries, max_to_save=3):
+def fetch_and_scrape_news(browser: Browser, search_queries, max_to_save=3):
     try:
         google_news = GNews(language='en', country='US', period='1d', max_results=30)
-        raw_articles = []
+        raw_articles = [];
         for i, query in enumerate(search_queries):
             log(f"   News Hunt Tier {i+1}: {query}")
             results = google_news.get_news(query)
             if results: raw_articles = results; break
-
         unique_articles = {article['url']: article for article in raw_articles}.values()
         successfully_scraped_articles = []
-
         for article_info in unique_articles:
             if len(successfully_scraped_articles) >= max_to_save: break
             log(f"   Attempting to process article: {article_info['title']}")
-            
-            final_url = resolve_google_redirect(article_info['url'], google_context)
+            final_url = resolve_google_redirect(article_info['url'], browser)
             if not final_url: continue
-            
-            scraping_context = None
+            context = None
             try:
                 user_agent_string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
-                scraping_context = browser.new_context(user_agent=user_agent_string)
-                page = scraping_context.new_page()
+                context = browser.new_context(user_agent=user_agent_string)
+                page = context.new_page()
                 page.route(re.compile("|".join(BLOCK_PATTERNS)), lambda route: route.abort())
                 page.route(re.compile(r"(\.png$)|(\.jpeg$)|(\.jpg$)|(\.gif$)|(\.css$)"), lambda route: route.abort())
-                
                 page.goto(final_url, wait_until="domcontentloaded", timeout=60000)
                 html = page.content()
                 body_text = trafilatura.extract(html, include_comments=False, include_tables=False)
-                
                 if not body_text or len(body_text) < 250:
                     log(f"      -> SCRAPE FAILED: trafilatura could not extract a valid article body."); continue
-                
                 successfully_scraped_articles.append({"title": article_info['title'], "source": article_info['publisher']['title'], "url": final_url, "body": body_text[:4000]})
             except Exception as e:
                 log(f"       -> SCRAPE FAILED for {final_url}. Reason: {e}")
             finally:
-                if scraping_context: scraping_context.close()
-        
+                if context: context.close()
         return successfully_scraped_articles
     except Exception as e:
         log(f"!!! ERROR fetching news for query '{search_queries[0]}': {e}"); return []
 
 def generate_market_summary(scraped_articles, asset_name, api_key, model):
-    if not api_key: return "ERROR: OpenRouter API key not found."
-    if not scraped_articles: return "**No relevant news articles with clean content were found.**"
-    
+    if not api_key or not scraped_articles: return "**No relevant news articles with clean content were found.**"
     log(f"Aggregating {len(scraped_articles)} articles for AI summary...")
     dossier = "".join([f"--- ARTICLE {i+1}: {a['title']} ---\n{a['body']}\n\n" for i, a in enumerate(scraped_articles)])
     prompt = f"Analyze the following news articles regarding {asset_name}. Provide a 3-4 sentence holistic market summary. Following the summary, on a new line, provide the overall market sentiment. The sentiment must be one of: Positive, Neutral, Negative, or Mixed.\n\nHere is the required format:\nSUMMARY: [Your summary here]\nSENTIMENT: [Your sentiment here]\n\nArticles Dossier: ###\n{dossier}\n###"
@@ -208,6 +183,41 @@ def generate_markdown_report(all_snapshots, folder):
             else: f.write("No source articles found.\n")
             f.write("\n---\n\n")
         f.write(f"*Report generated at {datetime.now().strftime('%H:%M:%S UTC')}*")
+    return filename
+
+def update_homepage(latest_briefing_path, snapshots_folder):
+    """Copies the content of the latest briefing to the root index.md for the homepage."""
+    try:
+        with open(latest_briefing_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        homepage_path = os.path.join(snapshots_folder, "index.md")
+        with open(homepage_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        log("Successfully updated homepage to show the latest briefing.")
+    except Exception as e:
+        log(f"!!! ERROR updating homepage: {e}")
+
+def update_mkdocs_navigation(snapshots_folder):
+    """Creates a .pages file to control the sidebar navigation order."""
+    try:
+        briefings_dir = os.path.join(snapshots_folder, "briefings")
+        if not os.path.isdir(briefings_dir): return
+
+        files = [f for f in os.listdir(briefings_dir) if f.endswith(".md")]
+        files.sort(reverse=True) # Sort newest first
+
+        pages_file_path = os.path.join(snapshots_folder, ".pages")
+        with open(pages_file_path, 'w', encoding='utf-8') as f:
+            f.write("nav:\n")
+            f.write("  - Welcome: welcome.md\n")
+            f.write("  - ...\n") # This lets the plugin auto-discover other top-level files
+            f.write("  - Briefings:\n")
+            for file in files:
+                f.write(f"    - {file.replace('.md', '')}\n")
+        log("Successfully updated the .pages navigation file.")
+    except Exception as e:
+        log(f"!!! ERROR updating .pages navigation file: {e}")
 
 # --- Main Execution Block ---
 if __name__ == "__main__":
@@ -227,38 +237,22 @@ if __name__ == "__main__":
         with sync_playwright() as p:
             browser_args = ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
             browser = p.chromium.launch(headless=True, args=browser_args)
-            
-            log("Creating a persistent browser context for Google operations...")
-            google_state_path = os.path.join(BASE_DIR, 'google_state.json')
-            google_context = browser.new_context(storage_state=google_state_path if os.path.exists(google_state_path) else None)
-            
-            if not os.path.exists(google_state_path):
-                prime_google_context(google_context)
-                google_context.storage_state(path=google_state_path)
-            
             for asset in assets_to_scrape:
                 asset_start_time = time.time()
                 log(f"--- Starting asset: {asset['name']} ---")
-                
                 snapshot = fetch_tradingview_yesterday_data(browser, asset['name'], asset['symbol'])
-                
                 if snapshot and snapshot['status'] == 'Success':
                     news_start_time = time.time()
                     search_queries = asset.get('search_queries', [])
-                    related_news = fetch_and_scrape_news(browser, google_context, search_queries)
+                    related_news = fetch_and_scrape_news(browser, search_queries)
                     log(f"News fetching took {time.time() - news_start_time:.2f} seconds.")
-                    
                     ai_start_time = time.time()
                     market_summary = generate_market_summary(related_news, asset['name'], OPENROUTER_API_KEY, ai_model)
                     log(f"AI summarization took {time.time() - ai_start_time:.2f} seconds.")
-
                     snapshot['market_summary'] = market_summary
                     snapshot['source_articles'] = related_news
-                
                 if snapshot: all_snapshots.append(snapshot)
                 log(f"--- Finished asset: {asset['name']}. Total time: {time.time() - asset_start_time:.2f} seconds. ---")
-
-            google_context.close()
             browser.close()
 
         snapshot_folder = os.path.join(BASE_DIR, "snapshots")
@@ -267,7 +261,11 @@ if __name__ == "__main__":
         json_filename = os.path.join(snapshot_folder, f"snapshot_{date_str}.json")
         log(f"Saving raw JSON data to '{json_filename}'...")
         with open(json_filename, 'w') as f: json.dump(all_snapshots, f, indent=4)
-        generate_markdown_report(all_snapshots, snapshot_folder)
+        
+        # --- NEW FINAL STEPS ---
+        latest_briefing_file = generate_markdown_report(all_snapshots, snapshot_folder)
+        update_homepage(latest_briefing_file, snapshot_folder)
+        update_mkdocs_navigation(snapshot_folder)
         
     except Exception as e:
         log(f"A critical error occurred in the main block: {e}")
