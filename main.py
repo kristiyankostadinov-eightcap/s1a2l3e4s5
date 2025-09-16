@@ -22,49 +22,49 @@ def log(message):
     """Prints a message with a timestamp."""
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
 
-def resolve_google_redirect(url: str, browser: Browser) -> str:
+def prime_google_context(context: BrowserContext):
     """
-    FINAL v6: The definitive redirect solver. Creates a fresh, isolated context for each
-    redirect to prevent state pollution and reliably handle the consent wall every time.
+    FINAL v3: A simple and patient function to prime the Google context.
+    It clicks the consent button and uses a static wait to avoid race conditions.
     """
-    context = None
+    log("Priming Google context to handle consent wall...")
+    page = None
     try:
-        user_agent_string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
-        context = browser.new_context(user_agent=user_agent_string)
         page = context.new_page()
-        page.goto(url, wait_until='domcontentloaded', timeout=30000)
+        page.goto("https://news.google.com", wait_until='domcontentloaded', timeout=30000)
         
         if "consent.google.com" in page.url:
-            log("      -> Google consent page detected. Searching for 'Accept all' button...")
-            try:
-                # First, try to click the button directly on the page.
-                page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=5000)
-                log("      -> Clicked 'Accept all' on the main page.")
-            except TimeoutError:
-                # If that fails, search within all iframes. This is the key.
-                log("      -> Button not on main page. Searching within iframes...")
-                found_in_iframe = False
-                for frame in page.frames:
-                    try:
-                        frame.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=3000)
-                        log("      -> Clicked 'Accept all' inside an iframe.")
-                        found_in_iframe = True; break
-                    except TimeoutError:
-                        continue
-                if not found_in_iframe: log("      -> Could not find the 'Accept all' button in any frame.")
-            
-            log("      -> Waiting for redirect to complete...")
-            page.wait_for_load_state("networkidle", timeout=15000)
+            log("   -> Google consent page detected. Clicking 'Accept all'...")
+            # This locator is robust and will find the button even if it's in an iframe.
+            page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=10000)
+            log("   -> 'Accept all' clicked. Waiting for 3 seconds for page to stabilize...")
+            # A simple, static wait is the most reliable way to handle the page self-destructing.
+            page.wait_for_timeout(3000)
+            log("   -> Context should now be primed.")
+        else:
+            log("   -> No consent page detected. Context is likely already primed.")
+    except Exception as e:
+        log(f"   -> An error occurred while priming Google context: {e}")
+    finally:
+        if page: page.close()
 
+def resolve_google_redirect(url: str, context: BrowserContext) -> str:
+    """A simple function to resolve redirects using the already-primed Google context."""
+    final_url = None
+    page = None
+    try:
+        page = context.new_page()
+        page.goto(url, wait_until='domcontentloaded', timeout=20000)
+        page.wait_for_timeout(2000) # Wait for any client-side redirects to fire
         final_url = page.url
         if "google.com" in final_url:
             log(f"      -> FAILED to resolve redirect. Still on a Google domain: {final_url}"); return None
         log(f"      -> Redirect resolved: {final_url}")
-        return final_url
     except Exception as e:
         log(f"      -> FAILED to resolve redirect for {url}. Reason: {e}"); return None
     finally:
-        if context: context.close()
+        if page: page.close()
+    return final_url
 
 def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_symbol: str):
     """Fetches OHLC data using a clean, isolated context."""
@@ -123,7 +123,8 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
     finally:
         if context: context.close()
 
-def fetch_and_scrape_news(browser: Browser, search_queries, max_to_save=3):
+def fetch_and_scrape_news(browser: Browser, google_context: BrowserContext, search_queries, max_to_save=3):
+    """Uses the primed Google context for redirects and clean contexts for scraping."""
     try:
         google_news = GNews(language='en', country='US', period='1d', max_results=30)
         raw_articles = [];
@@ -136,13 +137,13 @@ def fetch_and_scrape_news(browser: Browser, search_queries, max_to_save=3):
         for article_info in unique_articles:
             if len(successfully_scraped_articles) >= max_to_save: break
             log(f"   Attempting to process article: {article_info['title']}")
-            final_url = resolve_google_redirect(article_info['url'], browser)
+            final_url = resolve_google_redirect(article_info['url'], google_context)
             if not final_url: continue
-            context = None
+            scraping_context = None
             try:
                 user_agent_string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
-                context = browser.new_context(user_agent=user_agent_string)
-                page = context.new_page()
+                scraping_context = browser.new_context(user_agent=user_agent_string)
+                page = scraping_context.new_page()
                 page.route(re.compile("|".join(BLOCK_PATTERNS)), lambda route: route.abort())
                 page.route(re.compile(r"(\.png$)|(\.jpeg$)|(\.jpg$)|(\.gif$)|(\.css$)"), lambda route: route.abort())
                 page.goto(final_url, wait_until="domcontentloaded", timeout=60000)
@@ -154,7 +155,7 @@ def fetch_and_scrape_news(browser: Browser, search_queries, max_to_save=3):
             except Exception as e:
                 log(f"       -> SCRAPE FAILED for {final_url}. Reason: {e}")
             finally:
-                if context: context.close()
+                if scraping_context: scraping_context.close()
         return successfully_scraped_articles
     except Exception as e:
         log(f"!!! ERROR fetching news for query '{search_queries[0]}': {e}"); return []
@@ -189,7 +190,6 @@ def generate_markdown_report(all_snapshots, folder):
             else: f.write("No source articles found.\n")
             f.write("\n---\n\n")
         f.write(f"*Report generated at {datetime.now().strftime('%H:%M:%S UTC')}*")
-    return filename
 
 # --- Main Execution Block ---
 if __name__ == "__main__":
@@ -210,6 +210,11 @@ if __name__ == "__main__":
             browser_args = ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
             browser = p.chromium.launch(headless=True, args=browser_args)
             
+            # --- "Two-Context" strategy begins here ---
+            log("Creating and priming a dedicated browser context for Google operations...")
+            google_context = browser.new_context()
+            prime_google_context(google_context)
+            
             for asset in assets_to_scrape:
                 asset_start_time = time.time()
                 log(f"--- Starting asset: {asset['name']} ---")
@@ -219,7 +224,7 @@ if __name__ == "__main__":
                 if snapshot and snapshot['status'] == 'Success':
                     news_start_time = time.time()
                     search_queries = asset.get('search_queries', [])
-                    related_news = fetch_and_scrape_news(browser, search_queries)
+                    related_news = fetch_and_scrape_news(browser, google_context, search_queries)
                     log(f"News fetching took {time.time() - news_start_time:.2f} seconds.")
                     
                     ai_start_time = time.time()
@@ -232,6 +237,7 @@ if __name__ == "__main__":
                 if snapshot: all_snapshots.append(snapshot)
                 log(f"--- Finished asset: {asset['name']}. Total time: {time.time() - asset_start_time:.2f} seconds. ---")
 
+            google_context.close()
             browser.close()
 
         snapshot_folder = os.path.join(BASE_DIR, "snapshots")
