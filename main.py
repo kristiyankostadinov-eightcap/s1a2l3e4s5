@@ -23,30 +23,36 @@ def log(message):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
 
 def resolve_google_redirect(url: str, browser: Browser) -> str:
-    """Creates a clean, isolated context for every redirect to ensure stability."""
-    final_url = None
+    """
+    FINAL v6: The definitive redirect solver. Creates a fresh, isolated context for each
+    redirect to prevent state pollution and reliably handle the consent wall every time.
+    """
     context = None
     try:
         user_agent_string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
         context = browser.new_context(user_agent=user_agent_string)
         page = context.new_page()
-        page.goto(url, wait_until='domcontentloaded', timeout=20000)
+        page.goto(url, wait_until='domcontentloaded', timeout=30000)
         
         if "consent.google.com" in page.url:
             log("      -> Google consent page detected. Searching for 'Accept all' button...")
             try:
-                page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=3000)
+                # First, try to click the button directly on the page.
+                page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=5000)
                 log("      -> Clicked 'Accept all' on the main page.")
             except TimeoutError:
+                # If that fails, search within all iframes. This is the key.
                 log("      -> Button not on main page. Searching within iframes...")
                 found_in_iframe = False
                 for frame in page.frames:
                     try:
-                        frame.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=2000)
-                        log("      -> Clicked 'Accept all' inside an iframe."); found_in_iframe = True; break
+                        frame.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=3000)
+                        log("      -> Clicked 'Accept all' inside an iframe.")
+                        found_in_iframe = True; break
                     except TimeoutError:
                         continue
                 if not found_in_iframe: log("      -> Could not find the 'Accept all' button in any frame.")
+            
             log("      -> Waiting for redirect to complete...")
             page.wait_for_load_state("networkidle", timeout=15000)
 
@@ -54,11 +60,11 @@ def resolve_google_redirect(url: str, browser: Browser) -> str:
         if "google.com" in final_url:
             log(f"      -> FAILED to resolve redirect. Still on a Google domain: {final_url}"); return None
         log(f"      -> Redirect resolved: {final_url}")
+        return final_url
     except Exception as e:
         log(f"      -> FAILED to resolve redirect for {url}. Reason: {e}"); return None
     finally:
         if context: context.close()
-    return final_url
 
 def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_symbol: str):
     """Fetches OHLC data using a clean, isolated context."""
@@ -185,40 +191,6 @@ def generate_markdown_report(all_snapshots, folder):
         f.write(f"*Report generated at {datetime.now().strftime('%H:%M:%S UTC')}*")
     return filename
 
-def update_homepage(latest_briefing_path, snapshots_folder):
-    """Copies the content of the latest briefing to the root index.md for the homepage."""
-    try:
-        with open(latest_briefing_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        homepage_path = os.path.join(snapshots_folder, "index.md")
-        with open(homepage_path, 'w', encoding='utf-8') as f:
-            f.write(content)
-        log("Successfully updated homepage to show the latest briefing.")
-    except Exception as e:
-        log(f"!!! ERROR updating homepage: {e}")
-
-def update_mkdocs_navigation(snapshots_folder):
-    """Creates a .pages file to control the sidebar navigation order."""
-    try:
-        briefings_dir = os.path.join(snapshots_folder, "briefings")
-        if not os.path.isdir(briefings_dir): return
-
-        files = [f for f in os.listdir(briefings_dir) if f.endswith(".md")]
-        files.sort(reverse=True) # Sort newest first
-
-        pages_file_path = os.path.join(snapshots_folder, ".pages")
-        with open(pages_file_path, 'w', encoding='utf-8') as f:
-            f.write("nav:\n")
-            f.write("  - Welcome: welcome.md\n")
-            f.write("  - ...\n") # This lets the plugin auto-discover other top-level files
-            f.write("  - Briefings:\n")
-            for file in files:
-                f.write(f"    - {file.replace('.md', '')}\n")
-        log("Successfully updated the .pages navigation file.")
-    except Exception as e:
-        log(f"!!! ERROR updating .pages navigation file: {e}")
-
 # --- Main Execution Block ---
 if __name__ == "__main__":
     main_start_time = time.time()
@@ -237,22 +209,29 @@ if __name__ == "__main__":
         with sync_playwright() as p:
             browser_args = ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
             browser = p.chromium.launch(headless=True, args=browser_args)
+            
             for asset in assets_to_scrape:
                 asset_start_time = time.time()
                 log(f"--- Starting asset: {asset['name']} ---")
+                
                 snapshot = fetch_tradingview_yesterday_data(browser, asset['name'], asset['symbol'])
+                
                 if snapshot and snapshot['status'] == 'Success':
                     news_start_time = time.time()
                     search_queries = asset.get('search_queries', [])
                     related_news = fetch_and_scrape_news(browser, search_queries)
                     log(f"News fetching took {time.time() - news_start_time:.2f} seconds.")
+                    
                     ai_start_time = time.time()
                     market_summary = generate_market_summary(related_news, asset['name'], OPENROUTER_API_KEY, ai_model)
                     log(f"AI summarization took {time.time() - ai_start_time:.2f} seconds.")
+
                     snapshot['market_summary'] = market_summary
                     snapshot['source_articles'] = related_news
+                
                 if snapshot: all_snapshots.append(snapshot)
                 log(f"--- Finished asset: {asset['name']}. Total time: {time.time() - asset_start_time:.2f} seconds. ---")
+
             browser.close()
 
         snapshot_folder = os.path.join(BASE_DIR, "snapshots")
@@ -261,11 +240,7 @@ if __name__ == "__main__":
         json_filename = os.path.join(snapshot_folder, f"snapshot_{date_str}.json")
         log(f"Saving raw JSON data to '{json_filename}'...")
         with open(json_filename, 'w') as f: json.dump(all_snapshots, f, indent=4)
-        
-        # --- NEW FINAL STEPS ---
-        latest_briefing_file = generate_markdown_report(all_snapshots, snapshot_folder)
-        update_homepage(latest_briefing_file, snapshot_folder)
-        update_mkdocs_navigation(snapshot_folder)
+        generate_markdown_report(all_snapshots, snapshot_folder)
         
     except Exception as e:
         log(f"A critical error occurred in the main block: {e}")
