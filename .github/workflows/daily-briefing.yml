@@ -39,3 +39,11 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
+
+      - name: Trigger Slack Workflow
+        if: success()
+        run: |
+          TODAY_DATE=$(date +%Y-%m-%d)
+          REPORT_URL="https://kristiyankostadinov-eightcap.github.io/s1a2l3e4s5/briefings/briefing_$TODAY_DATE/"
+          JSON_PAYLOAD="{\"report_url\": \"$REPORT_URL\"}"
+          curl -X POST -H 'Content-type: application/json' --data "$JSON_PAYLOAD" ${{ secrets.SLACK_WORKFLOW_URL }}
