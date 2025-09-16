@@ -40,7 +40,9 @@ def resolve_google_redirect(url: str, context: BrowserContext) -> str:
     return final_url
 
 def fetch_tradingview_yesterday_data(context: BrowserContext, asset_name: str, asset_symbol: str):
-    """A robust function to fetch OHLC data from TradingView using a shared browser context."""
+    """
+    FINAL v3: The fully optimized function with the original, working text-based selectors restored.
+    """
     url = f"https://www.tradingview.com/chart/?symbol={asset_symbol.replace(':', '%3A')}"
     page = None
     try:
@@ -69,16 +71,26 @@ def fetch_tradingview_yesterday_data(context: BrowserContext, asset_name: str, a
             log("No 'Got it!' popup found or it timed out.")
 
         def get_ohlc_values():
+            """
+            A robust helper to get OHLC values using the original, proven text-based regex method.
+            """
             try:
-                o_text = page.locator('div[data-name="legend-series-item-open"] > div > div:nth-child(2)').inner_text(timeout=500)
-                h_text = page.locator('div[data-name="legend-series-item-high"] > div > div:nth-child(2)').inner_text(timeout=500)
-                l_text = page.locator('div[data-name="legend-series-item-low"] > div > div:nth-child(2)').inner_text(timeout=500)
-                c_text = page.locator('div[data-name="legend-series-item-close"] > div > div:nth-child(2)').inner_text(timeout=500)
-                ohlc = {"open": float(o_text.replace(",", "")), "high": float(h_text.replace(",", "")), "low": float(l_text.replace(",", "")), "close": float(c_text.replace(",", ""))}
+                # --- THE CRITICAL FIX: REVERTED TO THE WORKING SELECTORS ---
+                o_text = page.get_by_text(re.compile(r"^O[\d.,]+")).inner_text(timeout=500)
+                h_text = page.get_by_text(re.compile(r"^H[\d.,]+")).inner_text(timeout=500)
+                l_text = page.get_by_text(re.compile(r"^L[\d.,]+")).inner_text(timeout=500)
+                c_text = page.get_by_text(re.compile(r"^C[\d.,]+")).inner_text(timeout=500)
+                
+                ohlc = {
+                    "open": float(o_text[1:].replace(",", "")),
+                    "high": float(h_text[1:].replace(",", "")),
+                    "low": float(l_text[1:].replace(",", "")),
+                    "close": float(c_text[1:].replace(",", ""))
+                }
                 log(f"   -> OHLC values detected: {ohlc}")
                 return ohlc
             except Exception as e:
-                log(f"   -> Could not detect OHLC values on this candle. Error: {e}")
+                log(f"   -> Could not detect OHLC values on this candle. Error: {type(e).__name__}")
                 return None
 
         log("Finding the most recent historical candle...")
