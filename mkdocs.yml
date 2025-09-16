@@ -6,6 +6,8 @@ theme:
 
 plugins:
   - search
+  # This plugin will now automatically create a nested sidebar from your folder structure.
   - awesome-pages
 
+# Tell MkDocs where to find all the content.
 docs_dir: 'snapshots'

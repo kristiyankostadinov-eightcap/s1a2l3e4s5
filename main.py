@@ -11,10 +11,10 @@ from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# --- Global constant for network blocking ---
+# --- THE CRITICAL FIX: Corrected regex patterns ---
 BLOCK_PATTERNS = [
-    "*.cookielaw.org", "*.onetrust.com", "*.trustarc.com", "*.cookiebot.com",
-    "*.consensu.org", "google-analytics.com", "googletagmanager.com",
+    "cookielaw.org", "onetrust.com", "trustarc.com", "cookiebot.com",
+    "consensu.org", "google-analytics.com", "googletagmanager.com",
     "doubleclick.net", "adservice.google.com"
 ]
 
@@ -22,30 +22,60 @@ def log(message):
     """Prints a message with a timestamp."""
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
 
-def resolve_google_redirect(url: str, context: BrowserContext) -> str:
-    """A robust function to navigate through Google's redirect service."""
-    final_url = url
+def resolve_google_redirect(url: str, browser: Browser) -> str:
+    """
+    FINAL v5: The most robust version. Creates a clean, isolated context for every redirect.
+    """
+    final_url = None
+    context = None
     page = None
     try:
+        user_agent_string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+        context = browser.new_context(user_agent=user_agent_string)
         page = context.new_page()
+        
         page.goto(url, wait_until='domcontentloaded', timeout=20000)
-        page.wait_for_function("!window.location.href.startsWith('https://news.google.com')", timeout=15000)
+        
+        if "consent.google.com" in page.url:
+            log("      -> Google consent page detected. Searching for 'Accept all' button...")
+            try:
+                page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=3000)
+                log("      -> Clicked 'Accept all' on the main page.")
+            except TimeoutError:
+                log("      -> Button not on main page. Searching within iframes...")
+                found_in_iframe = False
+                for frame in page.frames:
+                    try:
+                        frame.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=2000)
+                        log("      -> Clicked 'Accept all' inside an iframe.")
+                        found_in_iframe = True; break
+                    except TimeoutError:
+                        continue
+                if not found_in_iframe: log("      -> Could not find the 'Accept all' button in any frame.")
+            log("      -> Waiting for redirect to complete...")
+            page.wait_for_load_state("networkidle", timeout=15000)
+
         final_url = page.url
+        
+        if "google.com" in final_url:
+            log(f"      -> FAILED to resolve redirect. Still on a Google domain: {final_url}")
+            return None
+            
         log(f"      -> Redirect resolved: {final_url}")
     except Exception as e:
         log(f"      -> FAILED to resolve redirect for {url}. Reason: {e}")
         return None
     finally:
-        if page: page.close()
+        if context: context.close()
     return final_url
 
-def fetch_tradingview_yesterday_data(context: BrowserContext, asset_name: str, asset_symbol: str):
-    """
-    FINAL v3: The fully optimized function with the original, working text-based selectors restored.
-    """
+def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_symbol: str):
+    """A robust function to fetch OHLC data from TradingView."""
     url = f"https://www.tradingview.com/chart/?symbol={asset_symbol.replace(':', '%3A')}"
+    context = None
     page = None
     try:
+        context = browser.new_context()
         page = context.new_page()
         page.set_viewport_size({"width": 1920, "height": 1080})
         
@@ -71,22 +101,12 @@ def fetch_tradingview_yesterday_data(context: BrowserContext, asset_name: str, a
             log("No 'Got it!' popup found or it timed out.")
 
         def get_ohlc_values():
-            """
-            A robust helper to get OHLC values using the original, proven text-based regex method.
-            """
             try:
-                # --- THE CRITICAL FIX: REVERTED TO THE WORKING SELECTORS ---
                 o_text = page.get_by_text(re.compile(r"^O[\d.,]+")).inner_text(timeout=500)
                 h_text = page.get_by_text(re.compile(r"^H[\d.,]+")).inner_text(timeout=500)
                 l_text = page.get_by_text(re.compile(r"^L[\d.,]+")).inner_text(timeout=500)
                 c_text = page.get_by_text(re.compile(r"^C[\d.,]+")).inner_text(timeout=500)
-                
-                ohlc = {
-                    "open": float(o_text[1:].replace(",", "")),
-                    "high": float(h_text[1:].replace(",", "")),
-                    "low": float(l_text[1:].replace(",", "")),
-                    "close": float(c_text[1:].replace(",", ""))
-                }
+                ohlc = {"open": float(o_text[1:].replace(",", "")), "high": float(h_text[1:].replace(",", "")), "low": float(l_text[1:].replace(",", "")), "close": float(c_text[1:].replace(",", ""))}
                 log(f"   -> OHLC values detected: {ohlc}")
                 return ohlc
             except Exception as e:
@@ -121,10 +141,10 @@ def fetch_tradingview_yesterday_data(context: BrowserContext, asset_name: str, a
         log(f"!!! ERROR processing {asset_name}: {e}")
         return {"asset_name": asset_name, "symbol": asset_symbol, "status": "Failed", "error": str(e)}
     finally:
-        if page: page.close()
+        if context: context.close()
 
-def fetch_and_scrape_news(context: BrowserContext, search_queries, max_to_save=3):
-    """An efficient news scraper that reuses the main browser context."""
+def fetch_and_scrape_news(browser: Browser, search_queries, max_to_save=3):
+    """An efficient news scraper that now uses isolated contexts for stability."""
     try:
         google_news = GNews(language='en', country='US', period='1d', max_results=30)
         raw_articles = []
@@ -140,12 +160,16 @@ def fetch_and_scrape_news(context: BrowserContext, search_queries, max_to_save=3
             if len(successfully_scraped_articles) >= max_to_save: break
             log(f"   Attempting to process article: {article_info['title']}")
             
-            final_url = resolve_google_redirect(article_info['url'], context)
+            final_url = resolve_google_redirect(article_info['url'], browser)
             if not final_url: continue
-
+            
+            context = None
             page = None
             try:
+                user_agent_string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+                context = browser.new_context(user_agent=user_agent_string)
                 page = context.new_page()
+
                 page.route(re.compile("|".join(BLOCK_PATTERNS)), lambda route: route.abort())
                 page.route(re.compile(r"(\.png$)|(\.jpeg$)|(\.jpg$)|(\.gif$)|(\.css$)"), lambda route: route.abort())
                 
@@ -160,7 +184,7 @@ def fetch_and_scrape_news(context: BrowserContext, search_queries, max_to_save=3
             except Exception as e:
                 log(f"       -> SCRAPE FAILED for {final_url}. Reason: {e}")
             finally:
-                if page: page.close()
+                if context: context.close()
         
         return successfully_scraped_articles
     except Exception as e:
@@ -177,10 +201,16 @@ def generate_market_summary(scraped_articles, asset_name, api_key, model):
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers={"Authorization": f"Bearer {api_key}"}, json={"model": model, "messages": [{"role": "user", "content": prompt}]})
         response.raise_for_status()
         raw_text = response.json()['choices'][0]['message']['content'].strip()
+        
+        # --- THE FIX IS HERE ---
+        # We now extract the summary and sentiment separately.
         summary = re.search(r"SUMMARY:\s*(.*)", raw_text, re.DOTALL|re.I).group(1).strip()
         sentiment = re.search(r"SENTIMENT:\s*(.*)", raw_text, re.I).group(1).strip()
+        
+        # Then, we combine them into the final format we want.
         return f"{summary}\n\n**Overall Market Sentiment:** {sentiment}"
-    except Exception as e: return f"ERROR: AI summary request failed: {e}"
+    except Exception as e:
+        return f"ERROR: AI summary request failed: {e}"
 
 def generate_markdown_report(all_snapshots, folder):
     date_str = datetime.now().strftime("%Y-%m-%d")
@@ -218,19 +248,16 @@ if __name__ == "__main__":
             browser_args = ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
             browser = p.chromium.launch(headless=True, args=browser_args)
             
-            user_agent_string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
-            main_context = browser.new_context(user_agent=user_agent_string)
-            
             for asset in assets_to_scrape:
                 asset_start_time = time.time()
                 log(f"--- Starting asset: {asset['name']} ---")
                 
-                snapshot = fetch_tradingview_yesterday_data(main_context, asset['name'], asset['symbol'])
+                snapshot = fetch_tradingview_yesterday_data(browser, asset['name'], asset['symbol'])
                 
                 if snapshot and snapshot['status'] == 'Success':
                     news_start_time = time.time()
                     search_queries = asset.get('search_queries', [])
-                    related_news = fetch_and_scrape_news(main_context, search_queries)
+                    related_news = fetch_and_scrape_news(browser, search_queries)
                     log(f"News fetching took {time.time() - news_start_time:.2f} seconds.")
                     
                     ai_start_time = time.time()
@@ -243,7 +270,6 @@ if __name__ == "__main__":
                 if snapshot: all_snapshots.append(snapshot)
                 log(f"--- Finished asset: {asset['name']}. Total time: {time.time() - asset_start_time:.2f} seconds. ---")
 
-            main_context.close()
             browser.close()
 
         snapshot_folder = os.path.join(BASE_DIR, "snapshots")
