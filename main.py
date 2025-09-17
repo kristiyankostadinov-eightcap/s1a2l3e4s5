@@ -24,7 +24,7 @@ def log(message):
 
 def prime_google_context(context: BrowserContext):
     """
-    FINAL v3: A simple and patient function to prime the Google context.
+    A simple and patient function to prime the Google context.
     It clicks the consent button and uses a static wait to avoid race conditions.
     """
     log("Priming Google context to handle consent wall...")
@@ -35,10 +35,8 @@ def prime_google_context(context: BrowserContext):
         
         if "consent.google.com" in page.url:
             log("   -> Google consent page detected. Clicking 'Accept all'...")
-            # This locator is robust and will find the button even if it's in an iframe.
             page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=10000)
             log("   -> 'Accept all' clicked. Waiting for 3 seconds for page to stabilize...")
-            # A simple, static wait is the most reliable way to handle the page self-destructing.
             page.wait_for_timeout(3000)
             log("   -> Context should now be primed.")
         else:
@@ -55,7 +53,7 @@ def resolve_google_redirect(url: str, context: BrowserContext) -> str:
     try:
         page = context.new_page()
         page.goto(url, wait_until='domcontentloaded', timeout=20000)
-        page.wait_for_timeout(2000) # Wait for any client-side redirects to fire
+        page.wait_for_timeout(2000)
         final_url = page.url
         if "google.com" in final_url:
             log(f"      -> FAILED to resolve redirect. Still on a Google domain: {final_url}"); return None
@@ -115,23 +113,25 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         chart_area.press('ArrowLeft'); page.wait_for_timeout(500)
         final_ohlc = get_ohlc_values()
         if not final_ohlc: raise Exception("Failed to retrieve final OHLC values.")
+
+        # --- START OF FOREX FORMATTING FIX ---
         if "/" in asset_name:  # This identifies forex pairs like 'EUR/USD'
-    price_format = ",.4f"
-else:  # For everything else (Gold, Oil, Indices)
-    price_format = ",.3f"
+            price_format = ",.4f"
+        else:  # For everything else (Gold, Oil, Indices)
+            price_format = ",.3f"
+        
+        day_range = final_ohlc['high'] - final_ohlc['low']
+        
+        return {"asset_name": asset_name, "symbol": asset_symbol, "status": "Success", "data": {
+            "day_range": f"{day_range:{price_format}}",
+            "open": f"{final_ohlc['open']:{price_format}}",
+            "close": f"{final_ohlc['close']:{price_format}}",
+            "high": f"{final_ohlc['high']:{price_format}}",
+            "low": f"{final_ohlc['low']:{price_format}}"
+        }}
+        # --- END OF FOREX FORMATTING FIX ---
 
-day_range = final_ohlc['high'] - final_ohlc['low']
-
-# Apply the dynamic format string to all values
-return {"asset_name": asset_name, "symbol": asset_symbol, "status": "Success", "data": {
-    "day_range": f"{day_range:{price_format}}",
-    "open": f"{final_ohlc['open']:{price_format}}",
-    "close": f"{final_ohlc['close']:{price_format}}",
-    "high": f"{final_ohlc['high']:{price_format}}",
-    "low": f"{final_ohlc['low']:{price_format}}"
-}}
-
-except Exception as e:
+    except Exception as e:
         log(f"!!! ERROR processing {asset_name}: {e}")
         return {"asset_name": asset_name, "symbol": asset_symbol, "status": "Failed", "error": str(e)}
     finally:
@@ -224,7 +224,6 @@ if __name__ == "__main__":
             browser_args = ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
             browser = p.chromium.launch(headless=True, args=browser_args)
             
-            # --- "Two-Context" strategy begins here ---
             log("Creating and priming a dedicated browser context for Google operations...")
             google_context = browser.new_context()
             prime_google_context(google_context)
