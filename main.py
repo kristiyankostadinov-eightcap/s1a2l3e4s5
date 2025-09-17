@@ -115,9 +115,23 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         chart_area.press('ArrowLeft'); page.wait_for_timeout(500)
         final_ohlc = get_ohlc_values()
         if not final_ohlc: raise Exception("Failed to retrieve final OHLC values.")
-        day_range = final_ohlc['high'] - final_ohlc['low']
-        return {"asset_name": asset_name, "symbol": asset_symbol, "status": "Success", "data": {"day_range": f"{day_range:,.3f}", "open": f"{final_ohlc['open']:,.3f}", "close": f"{final_ohlc['close']:,.3f}", "high": f"{final_ohlc['high']:,.3f}", "low": f"{final_ohlc['low']:,.3f}"}}
-    except Exception as e:
+        if "/" in asset_name:  # This identifies forex pairs like 'EUR/USD'
+    price_format = ",.4f"
+else:  # For everything else (Gold, Oil, Indices)
+    price_format = ",.3f"
+
+day_range = final_ohlc['high'] - final_ohlc['low']
+
+# Apply the dynamic format string to all values
+return {"asset_name": asset_name, "symbol": asset_symbol, "status": "Success", "data": {
+    "day_range": f"{day_range:{price_format}}",
+    "open": f"{final_ohlc['open']:{price_format}}",
+    "close": f"{final_ohlc['close']:{price_format}}",
+    "high": f"{final_ohlc['high']:{price_format}}",
+    "low": f"{final_ohlc['low']:{price_format}}"
+}}
+
+except Exception as e:
         log(f"!!! ERROR processing {asset_name}: {e}")
         return {"asset_name": asset_name, "symbol": asset_symbol, "status": "Failed", "error": str(e)}
     finally:
