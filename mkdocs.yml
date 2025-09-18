@@ -1,20 +1,50 @@
-site_name: "Daily Market Briefings"
-site_url: "https://kristiyankostadinov-eightcap.github.io/s1a2l3e4s5/"
+name: Generate and Deploy Daily Market Briefing
 
-theme:
-  name: "material"
+on:
+  workflow_dispatch: # Allows manual triggering
+  schedule:
+    - cron: '30 5 * * *' # Runs every day at 05:30 UTC
 
-plugins:
-  - search
-  - awesome-pages
+permissions:
+  contents: write
 
-docs_dir: 'snapshots'
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-# --- THE FIX IS HERE ---
-# This new section controls the Table of Contents depth.
-markdown_extensions:
-  - toc:
-      # This tells the theme to only include h2 (##) and h3 (###) headings.
-      # Since your asset names are h2, this will give you the clean list you want.
-      permalink: true
-      toc_depth: 2
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies and Browsers
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install chromium --with-deps
+
+      - name: Run the Market Analysis Script
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python main.py
+
+      # --- THIS IS THE NEW, CRITICAL STEP ---
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          # This message will appear in your git history, e.g., "Automated briefing for 2025-09-17"
+          commit_message: "Automated briefing for $(date +%Y-%m-%d)"
+          # This specifies which folder to check for new files.
+          file_pattern: 'snapshots/'
+
+      - name: Build the MkDocs Website
+        run: mkdocs build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
