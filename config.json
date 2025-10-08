@@ -1,6 +1,6 @@
 {
   "news_config": {
-    "ai_model": "qwen/qwen3-235b-a22b:free"
+    "ai_model": "meta-llama/llama-3.3-70b-instruct:free"
   },
   "assets": [
     {
