@@ -186,7 +186,9 @@ def generate_market_summary(scraped_articles, asset_name, api_key, model):
         summary = re.search(r"SUMMARY:\s*(.*)", raw_text, re.DOTALL|re.I).group(1).strip()
         sentiment = re.search(r"SENTIMENT:\s*(.*)", raw_text, re.I).group(1).strip()
         return f"{summary}\n\n**Overall Market Sentiment:** {sentiment}"
-    except Exception as e: return f"ERROR: AI summary request failed: {e}"
+    except Exception as e: 
+        log(f"ERROR: AI summary request failed: {e}")
+        return f"ERROR: AI summary request failed: {e}"
 
 def generate_markdown_report(all_snapshots, folder):
     date_str = datetime.now().strftime("%Y-%m-%d")
