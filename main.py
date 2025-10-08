@@ -114,10 +114,9 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         final_ohlc = get_ohlc_values()
         if not final_ohlc: raise Exception("Failed to retrieve final OHLC values.")
 
-        # --- START OF FOREX FORMATTING FIX ---
-        if "/" in asset_name:  # This identifies forex pairs like 'EUR/USD'
+        if "/" in asset_name:
             price_format = ",.4f"
-        else:  # For everything else (Gold, Oil, Indices)
+        else:
             price_format = ",.3f"
         
         day_range = final_ohlc['high'] - final_ohlc['low']
@@ -129,7 +128,6 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
             "high": f"{final_ohlc['high']:{price_format}}",
             "low": f"{final_ohlc['low']:{price_format}}"
         }}
-        # --- END OF FOREX FORMATTING FIX ---
 
     except Exception as e:
         log(f"!!! ERROR processing {asset_name}: {e}")
@@ -175,20 +173,70 @@ def fetch_and_scrape_news(browser: Browser, google_context: BrowserContext, sear
         log(f"!!! ERROR fetching news for query '{search_queries[0]}': {e}"); return []
 
 def generate_market_summary(scraped_articles, asset_name, api_key, model):
-    if not api_key or not scraped_articles: return "**No relevant news articles with clean content were found.**"
-    log(f"Aggregating {len(scraped_articles)} articles for AI summary...")
-    dossier = "".join([f"--- ARTICLE {i+1}: {a['title']} ---\n{a['body']}\n\n" for i, a in enumerate(scraped_articles)])
-    prompt = f"You are a financial analyst providing a market summary for a sales team.\n\nFirst, analyze the following news articles about {asset_name} step-by-step. Consider the key market drivers, price action, and overall sentiment of each article.\n\nSecond, based on your analysis, generate a response in the following format, and nothing else:\n\nSUMMARY: [A 3-4 sentence summary of the key market drivers and price action, written in a clear and concise style for a sales professional.]\nSENTIMENT: [One of: Positive, Neutral, Negative, or Mixed]\n\nArticles:\n{dossier}"
+    """
+    Generates a financial market summary using an AI model.
+    """
+    if not api_key:
+        return "**ERROR: API key is missing.**"
+    if not scraped_articles:
+        return "**No relevant news articles with clean content were found.**"
+
+    log(f"Aggregating {len(scraped_articles)} articles about {asset_name} for AI summary...")
+    dossier = "".join(
+        [f"--- ARTICLE {i+1}: {a['title']} ---\n{a['body']}\n\n" for i, a in enumerate(scraped_articles)]
+    )
+    prompt = f"""
+### ROLE ###
+You are an expert financial analyst writing a market summary for a sales team. Your tone is concise, professional, and actionable.
+
+### TASK ###
+1. Silently analyze the provided news articles about {asset_name}.
+2. Identify the key market drivers, price action, technical levels, and overall sentiment.
+3. Synthesize your analysis into a brief, 3-4 sentence summary.
+4. Determine the overall market sentiment.
+
+### OUTPUT FORMAT ###
+You MUST provide your response in the following format, and nothing else. Do not include headers, explanations, or your thought process.
+
+[A 3-4 sentence summary paragraph of the key market drivers and price action.]
+
+Overall Market Sentiment: [One of: Positive, Neutral, Negative, or Mixed]
+
+### ARTICLES ###
+{dossier}
+"""
     try:
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}, json={"model": model, "messages": [{"role": "user", "content": prompt}]})
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}]
+            },
+            timeout=180
+        )
         response.raise_for_status()
         raw_text = response.json()['choices'][0]['message']['content'].strip()
-        summary = re.search(r"SUMMARY:\s*(.*)", raw_text, re.DOTALL|re.I).group(1).strip()
-        sentiment = re.search(r"SENTIMENT:\s*(.*)", raw_text, re.I).group(1).strip()
-        return f"{summary}\n\n**Overall Market Sentiment:** {sentiment}"
-    except Exception as e: 
-        log(f"ERROR: AI summary request failed: {e}")
-        return f"ERROR: AI summary request failed: {e}"
+        
+        delimiter = "Overall Market Sentiment:"
+        if delimiter in raw_text:
+            parts = raw_text.rsplit(delimiter, 1)
+            summary = parts[0].strip()
+            sentiment = parts[1].strip()
+            return f"{summary}\\n\\n**Overall Market Sentiment:** {sentiment}"
+        else:
+            log(f"ERROR: AI response did not follow the expected format. Raw response: {raw_text}")
+            return "ERROR: AI failed to generate a summary in the correct format. Please try again."
+
+    except requests.exceptions.RequestException as e:
+        log(f"ERROR: AI summary request failed due to a network issue: {e}")
+        return f"ERROR: Could not connect to the AI service: {e}"
+    except Exception as e:
+        log(f"ERROR: AI summary request failed with an unexpected error: {e}")
+        return f"ERROR: An unexpected error occurred during AI summary generation: {e}"
 
 def generate_markdown_report(all_snapshots, folder):
     date_str = datetime.now().strftime("%Y-%m-%d")
@@ -200,7 +248,7 @@ def generate_markdown_report(all_snapshots, folder):
         f.write(f"# Daily Market Briefing - {date_str}\n\n")
         for snap in all_snapshots:
             if snap['status'] != 'Success': continue
-            f.write(f"## {snap['asset_name']} ({snap['symbol']})\n\n### Market Snapshot\n*   **Yesterday's Close:** {snap['data']['close']}\n*   **Day's Range:** {snap['data']['day_range']}\n*   **Open:** {snap['data']['open']}\n*   **High:** {snap['data']['high']}\n*   **Low:** {snap['data']['low']}\n\n### AI Market Summary\n{snap.get('market_summary', 'N/A')}\n\n### Source Articles\n")
+            f.write(f"## {snap['asset_name']} ({snap['symbol']})\n\n### Market Snapshot\n* **Yesterday's Close:** {snap['data']['close']}\n* **Day's Range:** {snap['data']['day_range']}\n* **Open:** {snap['data']['open']}\n* **High:** {snap['data']['high']}\n* **Low:** {snap['data']['low']}\n\n### AI Market Summary\n{snap.get('market_summary', 'N/A')}\n\n### Source Articles\n")
             if snap.get('source_articles'):
                 for i, art in enumerate(snap['source_articles']): f.write(f"{i+1}. [{art['title']}]({art['url']}) - *{art['source']}*\n")
             else: f.write("No source articles found.\n")
