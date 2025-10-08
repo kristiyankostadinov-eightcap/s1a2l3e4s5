@@ -179,57 +179,51 @@ def generate_market_summary(scraped_articles, asset_name, api_key, model):
     if not api_key:
         return "**ERROR: API key is missing.**"
     if not scraped_articles:
-        return "**No relevant news articles with clean content were found.**"
+        # This is not an error, but a valid state for the report.
+        return "No relevant news articles were found to generate a summary."
 
     log(f"Aggregating {len(scraped_articles)} articles about {asset_name} for AI summary...")
     dossier = "".join(
         [f"--- ARTICLE {i+1}: {a['title']} ---\n{a['body']}\n\n" for i, a in enumerate(scraped_articles)]
     )
+    
+    # NEW, MORE ROBUST PROMPT
     prompt = f"""
 ### ROLE ###
-You are an expert financial analyst writing a market summary for a sales team. Your tone is concise, professional, and actionable.
+You are an expert financial analyst. Your task is to analyze news articles and produce a concise, professional market summary for a sales team.
 
-### TASK ###
-1. Silently analyze the provided news articles about {asset_name}.
-2. Identify the key market drivers, price action, technical levels, and overall sentiment.
-3. Synthesize your analysis into a brief, 3-4 sentence summary.
-4. Determine the overall market sentiment.
+### INSTRUCTIONS ###
+1. First, think step-by-step inside a <scratchpad> block. Silently analyze the key drivers, price action, and sentiment from the articles about {asset_name}. Formulate your key points in the scratchpad. This scratchpad will NOT be part of your final output.
+2. Second, based on your analysis in the scratchpad, generate a report that STRICTLY follows the format specified in the ### OUTPUT FORMAT ### section.
 
 ### OUTPUT FORMAT ###
-You MUST provide your response in the following format, and nothing else. Do not include headers, explanations, or your thought process.
+**{asset_name} - Market Drivers & Outlook**
+* **Key Drivers:** [A bullet point summarizing the primary bullish or bearish factors, like central bank policy, economic data, or geopolitical events.]
+* **Price Action:** [A bullet point describing the recent price movement, mentioning any key levels tested or broken.]
+* **Technical Outlook:** [A bullet point on the technical picture, mentioning key support/resistance zones or overall momentum.]
 
-[A 3-4 sentence summary paragraph of the key market drivers and price action.]
-
-Overall Market Sentiment: [One of: Positive, Neutral, Negative, or Mixed]
+**Overall Market Sentiment:** [One of: Positive, Neutral, Negative, or Mixed]
 
 ### ARTICLES ###
 {dossier}
+
+IMPORTANT: Your final response must ONLY be the formatted report starting with the bolded asset name. Do not include the <scratchpad> block or any other text, explanation, or preamble.
 """
+
     try:
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": model,
-                "messages": [{"role": "user", "content": prompt}]
-            },
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={"model": model, "messages": [{"role": "user", "content": prompt}]},
             timeout=180
         )
         response.raise_for_status()
         raw_text = response.json()['choices'][0]['message']['content'].strip()
         
-        delimiter = "Overall Market Sentiment:"
-        if delimiter in raw_text:
-            parts = raw_text.rsplit(delimiter, 1)
-            summary = parts[0].strip()
-            sentiment = parts[1].strip()
-            return f"{summary}\\n\\n**Overall Market Sentiment:** {sentiment}"
-        else:
-            log(f"ERROR: AI response did not follow the expected format. Raw response: {raw_text}")
-            return "ERROR: AI failed to generate a summary in the correct format. Please try again."
+        # THIS IS THE FIX for '\n' artifacts.
+        cleaned_text = raw_text.replace('\\n', '\n')
+        
+        return cleaned_text
 
     except requests.exceptions.RequestException as e:
         log(f"ERROR: AI summary request failed due to a network issue: {e}")
