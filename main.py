@@ -187,27 +187,23 @@ def generate_market_summary(scraped_articles, asset_name, api_key, model):
         [f"--- ARTICLE {i+1}: {a['title']} ---\n{a['body']}\n\n" for i, a in enumerate(scraped_articles)]
     )
     
-    # NEW, MORE ROBUST PROMPT
     prompt = f"""
 ### ROLE ###
-You are an expert financial analyst. Your task is to analyze news articles and produce a concise, professional market summary for a sales team.
+You are an expert financial analyst. Your task is to analyze the provided news articles about {asset_name} and generate a market summary that strictly follows the format demonstrated in the example below.
 
-### INSTRUCTIONS ###
-1. First, think step-by-step inside a <scratchpad> block. Silently analyze the key drivers, price action, and sentiment from the articles about {asset_name}. Formulate your key points in the scratchpad. This scratchpad will NOT be part of your final output.
-2. Second, based on your analysis in the scratchpad, generate a report that STRICTLY follows the format specified in the ### OUTPUT FORMAT ### section.
+### EXAMPLE OF PERFECT OUTPUT ###
+**Gold (XAU/USD) - Market Drivers & Outlook**
+* **Key Drivers:** The primary driver is persistent inflation data in the U.S., which is increasing bets on a more hawkish Federal Reserve, strengthening the dollar and pressuring gold prices.
+* **Price Action:** Gold has broken below the key psychological level of $2,300, showing significant bearish momentum after failing to hold its earlier gains.
+* **Technical Outlook:** The immediate support is found near the 50-day moving average at $2,280, with resistance now firmly established at the $2,300 mark.
 
-### OUTPUT FORMAT ###
-**{asset_name} - Market Drivers & Outlook**
-* **Key Drivers:** [A bullet point summarizing the primary bullish or bearish factors, like central bank policy, economic data, or geopolitical events.]
-* **Price Action:** [A bullet point describing the recent price movement, mentioning any key levels tested or broken.]
-* **Technical Outlook:** [A bullet point on the technical picture, mentioning key support/resistance zones or overall momentum.]
+**Overall Market Sentiment:** Negative
 
-**Overall Market Sentiment:** [One of: Positive, Neutral, Negative, or Mixed]
+### YOUR TASK ###
+Now, generate the same report for **{asset_name}** based on the following articles. Your output must start directly with the bolded asset name and match the example's format and structure exactly. Do not add any preamble or explanation.
 
 ### ARTICLES ###
 {dossier}
-
-IMPORTANT: Your final response must ONLY be the formatted report starting with the bolded asset name. Do not include the <scratchpad> block or any other text, explanation, or preamble.
 """
 
     try:
