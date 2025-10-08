@@ -180,7 +180,7 @@ def generate_market_summary(scraped_articles, asset_name, api_key, model):
     dossier = "".join([f"--- ARTICLE {i+1}: {a['title']} ---\n{a['body']}\n\n" for i, a in enumerate(scraped_articles)])
     prompt = f"Analyze the following news articles regarding {asset_name}. Provide a 3-4 sentence holistic market summary. Following the summary, on a new line, provide the overall market sentiment. The sentiment must be one of: Positive, Neutral, Negative, or Mixed.\n\nHere is the required format:\nSUMMARY: [Your summary here]\nSENTIMENT: [Your sentiment here]\n\nArticles Dossier: ###\n{dossier}\n###"
     try:
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers={"Authorization": f"Bearer {api_key}"}, json={"model": model, "messages": [{"role": "user", "content": prompt}]})
+        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}, json={"model": model, "messages": [{"role": "user", "content": prompt}]})
         response.raise_for_status()
         raw_text = response.json()['choices'][0]['message']['content'].strip()
         summary = re.search(r"SUMMARY:\s*(.*)", raw_text, re.DOTALL|re.I).group(1).strip()
