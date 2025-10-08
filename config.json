@@ -1,6 +1,6 @@
 {
   "news_config": {
-    "ai_model": "deepseek/deepseek-chat-v3.1:free"
+    "ai_model": "deepseek/deepseek-chat-v3-0324:free"
   },
   "assets": [
     {
