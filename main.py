@@ -189,18 +189,26 @@ def generate_market_summary(scraped_articles, asset_name, api_key, model):
     
     prompt = f"""
 ### ROLE ###
-You are an expert financial analyst. Your task is to analyze the provided news articles about {asset_name} and generate a market summary that strictly follows the format demonstrated in the example below.
+You are an expert financial analyst. Your task is to analyze news articles about {asset_name} and generate a visually structured, concise market briefing for a busy sales agent.
+
+### INSTRUCTIONS ###
+1. Your tone must be professional, direct, and highly scannable.
+2. Use Markdown for formatting.
+3. **Bold** key figures, price levels, and critical terms (e.g., **$220**, **bullish momentum**, **hawkish**).
+4. Strictly follow the structure and style of the example below.
 
 ### EXAMPLE OF PERFECT OUTPUT ###
-**Gold (XAU/USD) - Market Drivers & Outlook**
-* **Key Drivers:** The primary driver is persistent inflation data in the U.S., which is increasing bets on a more hawkish Federal Reserve, strengthening the dollar and pressuring gold prices.
-* **Price Action:** Gold has broken below the key psychological level of $2,300, showing significant bearish momentum after failing to hold its earlier gains.
-* **Technical Outlook:** The immediate support is found near the 50-day moving average at $2,280, with resistance now firmly established at the $2,300 mark.
+### Gold (XAU/USD) Market Briefing
 
-**Overall Market Sentiment:** Negative
+* **Key Drivers:** Persistent U.S. inflation data is increasing bets on a more **hawkish** Federal Reserve, strengthening the dollar.
+* **Price Action:** Broke below the key psychological level of **$2,300**, showing significant **bearish** momentum.
+* **Technical Outlook:** Immediate support is near the 50-day moving average at **$2,280**, with resistance at **$2,300**.
+
+---
+**Overall Sentiment:** Negative 📉
 
 ### YOUR TASK ###
-Now, generate the same report for **{asset_name}** based on the following articles. Your output must start directly with the bolded asset name and match the example's format and structure exactly. Do not add any preamble or explanation.
+Now, generate the same report for **{asset_name}** based on the following articles. Your output must be in Markdown and match the example's format exactly. Do not add any preamble or explanation.
 
 ### ARTICLES ###
 {dossier}
