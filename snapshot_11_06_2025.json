@@ -1,0 +1,254 @@
+[
+    {
+        "asset_name": "Gold",
+        "symbol": "EIGHTCAP:XAUUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "60.480",
+            "open": "3,933.580",
+            "close": "3,979.810",
+            "high": "3,990.250",
+            "low": "3,929.770"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "Spot Brent Crude Oil",
+        "symbol": "EIGHTCAP:UKOUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "1.500",
+            "open": "64.548",
+            "close": "63.871",
+            "high": "65.278",
+            "low": "63.778"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "Spot WTI Crude Oil",
+        "symbol": "EIGHTCAP:USOUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "1.550",
+            "open": "60.625",
+            "close": "59.850",
+            "high": "61.295",
+            "low": "59.745"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "EUR/USD",
+        "symbol": "EIGHTCAP:EURUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "0.0029",
+            "open": "1.1481",
+            "close": "1.1492",
+            "high": "1.1498",
+            "low": "1.1468"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "GBP/USD",
+        "symbol": "EIGHTCAP:GBPUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "0.0044",
+            "open": "1.3019",
+            "close": "1.3050",
+            "high": "1.3054",
+            "low": "1.3010"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "AUD/USD",
+        "symbol": "EIGHTCAP:AUDUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "0.0054",
+            "open": "0.6486",
+            "close": "0.6505",
+            "high": "0.6512",
+            "low": "0.6458"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "USD/JPY",
+        "symbol": "EIGHTCAP:USDJPY",
+        "status": "Success",
+        "data": {
+            "day_range": "1.3980",
+            "open": "153.6380",
+            "close": "154.0920",
+            "high": "154.3510",
+            "low": "152.9530"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "USD/CAD",
+        "symbol": "EIGHTCAP:USDCAD",
+        "status": "Success",
+        "data": {
+            "day_range": "0.0047",
+            "open": "1.4097",
+            "close": "1.4104",
+            "high": "1.4140",
+            "low": "1.4092"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "GBP/JPY",
+        "symbol": "EIGHTCAP:GBPJPY",
+        "status": "Success",
+        "data": {
+            "day_range": "2.1750",
+            "open": "199.9070",
+            "close": "201.1060",
+            "high": "201.2340",
+            "low": "199.0590"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "BTC/USD",
+        "symbol": "EIGHTCAP:BTCUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "5,597.3000",
+            "open": "100,304.9400",
+            "close": "103,632.4000",
+            "high": "104,528.4000",
+            "low": "98,931.1000"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "ETH/USD",
+        "symbol": "EIGHTCAP:ETHUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "314.5000",
+            "open": "3,211.1000",
+            "close": "3,439.5500",
+            "high": "3,478.8500",
+            "low": "3,164.3500"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "SOL/USD",
+        "symbol": "EIGHTCAP:SOLUSD",
+        "status": "Success",
+        "data": {
+            "day_range": "16.6564",
+            "open": "151.0900",
+            "close": "161.7390",
+            "high": "163.8600",
+            "low": "147.2036"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "US30",
+        "symbol": "EIGHTCAP:US30",
+        "status": "Success",
+        "data": {
+            "day_range": "509.850",
+            "open": "47,220.000",
+            "close": "47,367.880",
+            "high": "47,485.600",
+            "low": "46,975.750"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "UK100",
+        "symbol": "EIGHTCAP:UK100",
+        "status": "Success",
+        "data": {
+            "day_range": "165.950",
+            "open": "9,685.490",
+            "close": "9,790.990",
+            "high": "9,810.740",
+            "low": "9,644.790"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "GER40",
+        "symbol": "EIGHTCAP:GER40",
+        "status": "Success",
+        "data": {
+            "day_range": "540.600",
+            "open": "23,837.800",
+            "close": "24,098.800",
+            "high": "24,127.900",
+            "low": "23,587.300"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "NDX100",
+        "symbol": "EIGHTCAP:NDX100",
+        "status": "Success",
+        "data": {
+            "day_range": "593.620",
+            "open": "25,458.090",
+            "close": "25,622.880",
+            "high": "25,771.460",
+            "low": "25,177.840"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "SPX500",
+        "symbol": "EIGHTCAP:SPX500",
+        "status": "Success",
+        "data": {
+            "day_range": "108.790",
+            "open": "6,780.630",
+            "close": "6,802.910",
+            "high": "6,833.420",
+            "low": "6,724.630"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    },
+    {
+        "asset_name": "JPN225",
+        "symbol": "EIGHTCAP:JPN225",
+        "status": "Success",
+        "data": {
+            "day_range": "2,250.000",
+            "open": "51,151.710",
+            "close": "51,181.000",
+            "high": "51,346.710",
+            "low": "49,096.710"
+        },
+        "market_summary": "No relevant news articles were found to generate a summary.",
+        "source_articles": []
+    }
+]
