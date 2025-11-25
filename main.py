@@ -65,54 +65,89 @@ def resolve_google_redirect(url: str, context: BrowserContext) -> str:
     return final_url
 
 def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_symbol: str):
-    """Fetches OHLC data using a clean, isolated context."""
+    """Fetches OHLC data using a clean, isolated context with robust popup handling."""
     context = None
     try:
         context = browser.new_context()
         page = context.new_page()
         page.set_viewport_size({"width": 1920, "height": 1080})
         log(f"Processing Price Data for {asset_name}...")
-        page.goto(f"https://www.tradingview.com/chart/?symbol={asset_symbol.replace(':', '%3A')}", wait_until="networkidle", timeout=90000)
         
+        page.goto(f"https://www.tradingview.com/chart/?symbol={asset_symbol.replace(':', '%3A')}", wait_until="domcontentloaded", timeout=90000)
+        
+        log("   -> Clearing potential popups...")
         try:
-            page.get_by_role("button", name="Accept all").click(timeout=7000); log("Cookie banner accepted.")
-        except TimeoutError:
-            log("No cookie banner found or it timed out.")
+            page.wait_for_timeout(3000) 
+
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(500)
+
+            cookie_btn = page.get_by_role("button", name="Accept all")
+            if cookie_btn.is_visible():
+                cookie_btn.click()
+                log("      -> Cookie banner accepted.")
+
+            overlays = page.locator('div[data-name="overlap-manager-root"] button[class*="close"], button[aria-label="Close"], button[name="Got it!"]')
+            if overlays.count() > 0:
+                for i in range(overlays.count()):
+                    if overlays.nth(i).is_visible():
+                        overlays.nth(i).click(force=True)
+                        log("      -> Closed an overlay/popup.")
+                        page.wait_for_timeout(500)
+                        
+        except Exception as e:
+            log(f"      -> Warning during popup clearing: {e}")
 
         chart_area = page.locator("div.chart-gui-wrapper")
-        chart_box = chart_area.bounding_box()
-        if chart_box:
-            chart_area.click(position={'x': chart_box['width'] * 0.9, 'y': chart_box['height'] * 0.5})
-        try:
-            page.get_by_role("button", name="Got it!").click(timeout=7000); log("'Got it!' popup closed.")
-        except TimeoutError:
-            log("No 'Got it!' popup found or it timed out.")
-
+        
+        log("   -> Activating chart area...")
+        chart_area.click(position={'x': 100, 'y': 100}, force=True)
+        
+        
         def get_ohlc_values():
             try:
-                o_text = page.get_by_text(re.compile(r"^O[\d.,]+")).inner_text(timeout=500)
-                h_text = page.get_by_text(re.compile(r"^H[\d.,]+")).inner_text(timeout=500)
-                l_text = page.get_by_text(re.compile(r"^L[\d.,]+")).inner_text(timeout=500)
-                c_text = page.get_by_text(re.compile(r"^C[\d.,]+")).inner_text(timeout=500)
-                ohlc = {"open": float(o_text[1:].replace(",", "")), "high": float(h_text[1:].replace(",", "")), "low": float(l_text[1:].replace(",", "")), "close": float(c_text[1:].replace(",", ""))}
-                log(f"   -> OHLC values detected: {ohlc}")
-                return ohlc
+                
+                o_text = page.get_by_text(re.compile(r"^O[\d.,]+")).first.inner_text(timeout=500)
+                h_text = page.get_by_text(re.compile(r"^H[\d.,]+")).first.inner_text(timeout=500)
+                l_text = page.get_by_text(re.compile(r"^L[\d.,]+")).first.inner_text(timeout=500)
+                c_text = page.get_by_text(re.compile(r"^C[\d.,]+")).first.inner_text(timeout=500)
+                
+                
+                def clean_val(txt):
+                    return float(re.sub(r"[^\d.]", "", txt.replace(",", "")))
+
+                return {
+                    "open": clean_val(o_text),
+                    "high": clean_val(h_text),
+                    "low": clean_val(l_text),
+                    "close": clean_val(c_text)
+                }
             except Exception: return None
 
-        log("Finding the most recent historical candle..."); chart_area.press('Home'); page.wait_for_timeout(500)
-        last_known_close = 0.0
-        for i in range(250):
-            chart_area.press('ArrowRight'); page.wait_for_timeout(50)
-            current_ohlc = get_ohlc_values()
-            if current_ohlc:
-                current_close = current_ohlc['close']
-                if i > 10 and current_close == last_known_close:
-                    log("   -> Price stopped changing. End of chart found."); chart_area.press('ArrowLeft'); page.wait_for_timeout(500); break
-                last_known_close = current_close
         
-        chart_area.press('ArrowLeft'); page.wait_for_timeout(500)
+        log("   -> Finding the most recent historical candle...")
+        chart_area.press('Home') 
+        page.wait_for_timeout(500)
+        chart_area.press('End')  
+        page.wait_for_timeout(1000)
+
+        
+        last_known_close = 0.0
+        
+        
+        chart_area.press('End') 
+        page.wait_for_timeout(1000)
+        
+        
         final_ohlc = get_ohlc_values()
-        if not final_ohlc: raise Exception("Failed to retrieve final OHLC values.")
+        
+        if not final_ohlc:
+            chart_area.press('ArrowLeft')
+            page.wait_for_timeout(200)
+            final_ohlc = get_ohlc_values()
+
+        if not final_ohlc: 
+            raise Exception("Failed to retrieve final OHLC values after navigation.")
 
         if "/" in asset_name:
             price_format = ",.4f"
@@ -121,6 +156,8 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         
         day_range = final_ohlc['high'] - final_ohlc['low']
         
+        log(f"   -> Success: {asset_name} closed at {final_ohlc['close']}")
+
         return {"asset_name": asset_name, "symbol": asset_symbol, "status": "Success", "data": {
             "day_range": f"{day_range:{price_format}}",
             "open": f"{final_ohlc['open']:{price_format}}",
@@ -131,6 +168,12 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
 
     except Exception as e:
         log(f"!!! ERROR processing {asset_name}: {e}")
+        # Capture screenshot on error for debugging
+        try:
+            timestamp = datetime.now().strftime("%H%M%S")
+            page.screenshot(path=f"error_{asset_name}_{timestamp}.png")
+            log(f"      -> Screenshot saved to error_{asset_name}_{timestamp}.png")
+        except: pass
         return {"asset_name": asset_name, "symbol": asset_symbol, "status": "Failed", "error": str(e)}
     finally:
         if context: context.close()
