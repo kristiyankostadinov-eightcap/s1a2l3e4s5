@@ -150,7 +150,7 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
                 }
             except Exception: return None
 
-        # --- DEBUG NAVIGATION LOGIC ---
+        # --- NAVIGATION LOGIC ---
         
         # Helper to log what we see
         def log_status(step_name):
@@ -171,24 +171,24 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         
         last_val = log_status("After END Press")
 
-        # 2. Press ArrowRight until the price stops changing
+        # 2. Press ArrowRight until the price stops changing (Hit the Wall)
         log("   -> Pushing RIGHT to find the absolute latest candle...")
         
-        # Use a safe range (e.g., 20) to ensure we hit the wall
-        for i in range(20): 
+        # Increased limit to 200 to ensure we hit the wall even if far back
+        for i in range(200): 
             chart_area.press('ArrowRight')
             page.wait_for_timeout(200) # Short wait for update
             
             curr_val = log_status(f"Right Step {i+1}")
             
-            # If data exists and hasn't changed from the last step, we hit the wall
+            # If data is stable (no change) AND we actually have data, we hit the edge
             if curr_val == last_val and curr_val is not None:
                 log(f"      -> Wall hit at step {i+1}. Values stopped changing.")
                 break
             
             last_val = curr_val
 
-        # 3. Step Back ONCE to get "Yesterday"
+        # 3. Step Back ONCE to get "Yesterday" (Second-to-last candle)
         log("   -> Navigating LEFT once to get the target candle (Yesterday).")
         chart_area.press('ArrowLeft')
         page.wait_for_timeout(1000)
