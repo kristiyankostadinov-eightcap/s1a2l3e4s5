@@ -101,7 +101,7 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         chart_area = page.locator("div.chart-gui-wrapper")
         
         log("   -> Activating chart area...")
-        chart_area.click(position={'x': 100, 'y': 100}, force=True)
+chart_area.click(position={'x': 1700, 'y': 500}, force=True)
         
         
         def get_ohlc_values():
