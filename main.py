@@ -35,10 +35,13 @@ def prime_google_context(context: BrowserContext):
         
         if "consent.google.com" in page.url:
             log("   -> Google consent page detected. Clicking 'Accept all'...")
-            page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=10000)
-            log("   -> 'Accept all' clicked. Waiting for 3 seconds for page to stabilize...")
-            page.wait_for_timeout(3000)
-            log("   -> Context should now be primed.")
+            try:
+                page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=10000)
+                log("   -> 'Accept all' clicked. Waiting for 3 seconds for page to stabilize...")
+                page.wait_for_timeout(3000)
+                log("   -> Context should now be primed.")
+            except:
+                log("   -> Could not click 'Accept all'.")
         else:
             log("   -> No consent page detected. Context is likely already primed.")
     except Exception as e:
@@ -115,7 +118,6 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         def get_ohlc_values():
             try:
                 # Use regex to find O, H, L, C followed immediately by numbers in the body text
-                # This is more robust than selecting by specific DOM elements which change class names
                 body_text = page.locator("body").inner_text()
                 
                 o_match = re.search(r"O([\d.,]+)", body_text)
@@ -148,43 +150,52 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
                 }
             except Exception: return None
 
-        # --- NEW NAVIGATION LOGIC ---
-        log("   -> Finding the latest candle...")
+        # --- DEBUG NAVIGATION LOGIC ---
+        
+        # Helper to log what we see
+        def log_status(step_name):
+            val = get_ohlc_values()
+            if val:
+                log(f"      [{step_name}] Chart Reads: O={val['open']} H={val['high']} L={val['low']} C={val['close']}")
+            else:
+                log(f"      [{step_name}] NO DATA FOUND.")
+            return val
+
+        log("   -> Starting Navigation Sequence...")
         
         # 1. Press END to jump close to the present
         try:
             chart_area.press('End') 
             page.wait_for_timeout(1000)
         except: pass
+        
+        last_val = log_status("After END Press")
 
-        # 2. Press ArrowRight until the price stops changing (Hit the Wall)
-        #    This ensures we are strictly at the latest available candle (Today/Live).
-        log("   -> Ensuring we are at the rightmost edge...")
+        # 2. Press ArrowRight until the price stops changing
+        log("   -> Pushing RIGHT to find the absolute latest candle...")
         
-        last_seen_ohlc = get_ohlc_values()
-        
-        # Safety limit of 15 steps to prevent infinite loop
-        for _ in range(15): 
+        # Use a safe range (e.g., 20) to ensure we hit the wall
+        for i in range(20): 
             chart_area.press('ArrowRight')
-            page.wait_for_timeout(200) # Short wait for UI update
+            page.wait_for_timeout(200) # Short wait for update
             
-            current_ohlc = get_ohlc_values()
+            curr_val = log_status(f"Right Step {i+1}")
             
-            # If data is stable (no change), we hit the edge
-            if current_ohlc == last_seen_ohlc and current_ohlc is not None:
+            # If data exists and hasn't changed from the last step, we hit the wall
+            if curr_val == last_val and curr_val is not None:
+                log(f"      -> Wall hit at step {i+1}. Values stopped changing.")
                 break
             
-            last_seen_ohlc = current_ohlc
+            last_val = curr_val
 
-        # 3. Step Back ONCE to get "Yesterday" (Second-to-last candle)
-        log("   -> Navigating LEFT once to get the second-to-last candle.")
+        # 3. Step Back ONCE to get "Yesterday"
+        log("   -> Navigating LEFT once to get the target candle (Yesterday).")
         chart_area.press('ArrowLeft')
         page.wait_for_timeout(1000)
         
-        final_ohlc = get_ohlc_values()
+        final_ohlc = log_status("FINAL TARGET")
         
         if not final_ohlc: 
-            # Capture title to see what asset actually loaded in case of error
             page_title = page.title()
             raise Exception(f"Failed to retrieve OHLC values. Page Title: {page_title}")
 
