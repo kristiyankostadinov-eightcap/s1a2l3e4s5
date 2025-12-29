@@ -35,13 +35,10 @@ def prime_google_context(context: BrowserContext):
         
         if "consent.google.com" in page.url:
             log("   -> Google consent page detected. Clicking 'Accept all'...")
-            try:
-                page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=10000)
-                log("   -> 'Accept all' clicked. Waiting for 3 seconds for page to stabilize...")
-                page.wait_for_timeout(3000)
-                log("   -> Context should now be primed.")
-            except:
-                log("   -> Could not click 'Accept all'.")
+            page.get_by_role("button", name=re.compile("Accept all", re.IGNORECASE)).click(timeout=10000)
+            log("   -> 'Accept all' clicked. Waiting for 3 seconds for page to stabilize...")
+            page.wait_for_timeout(3000)
+            log("   -> Context should now be primed.")
         else:
             log("   -> No consent page detected. Context is likely already primed.")
     except Exception as e:
@@ -76,13 +73,11 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         page.set_viewport_size({"width": 1920, "height": 1080})
         log(f"Processing Price Data for {asset_name}...")
         
-        # Use full symbol to get specific broker data (EIGHTCAP:)
         url = f"https://www.tradingview.com/chart/?symbol={asset_symbol.replace(':', '%3A')}&interval=1D"
         log(f"   -> Loading Chart: {url}")
         page.goto(url, wait_until="domcontentloaded", timeout=90000)
         
         # --- NUCLEAR POPUP REMOVAL ---
-        # Inject CSS to force hide all known TradingView dialogs/popups
         log("   -> Injecting anti-popup CSS...")
         try:
             page.add_style_tag(content="""
@@ -97,10 +92,9 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         except Exception as e:
             log(f"      -> CSS injection warning: {e}")
 
-        # Wait for chart to stabilize
         page.wait_for_timeout(5000)
 
-        # Clear any potential keyboard-trapping overlays
+        # Clear potential overlays
         try:
             page.keyboard.press("Escape")
             page.wait_for_timeout(500)
@@ -110,14 +104,12 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         
         log("   -> Activating chart area...")
         try:
-            # Click slightly offset from center to avoid center-screen modals
             chart_area.click(position={'x': 1000, 'y': 500}, force=True) 
         except:
             log("      -> Warning: direct click failed, attempting fallback.")
 
         def get_ohlc_values():
             try:
-                # Use regex to find O, H, L, C followed immediately by numbers in the body text
                 body_text = page.locator("body").inner_text()
                 
                 o_match = re.search(r"O([\d.,]+)", body_text)
@@ -131,14 +123,12 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
                     l_text = l_match.group(1)
                     c_text = c_match.group(1)
                 else:
-                    # Fallback to Playwright text locators if regex fails
                     o_text = page.get_by_text(re.compile(r"^O[\d.,]+")).first.inner_text(timeout=500)
                     h_text = page.get_by_text(re.compile(r"^H[\d.,]+")).first.inner_text(timeout=500)
                     l_text = page.get_by_text(re.compile(r"^L[\d.,]+")).first.inner_text(timeout=500)
                     c_text = page.get_by_text(re.compile(r"^C[\d.,]+")).first.inner_text(timeout=500)
                 
                 def clean_val(txt):
-                    # Remove the letter and commas, keep digits and decimal
                     clean = re.sub(r"[^\d.]", "", txt.replace(",", ""))
                     return float(clean)
 
@@ -150,9 +140,8 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
                 }
             except Exception: return None
 
-        # --- NAVIGATION LOGIC ---
+        # --- ESCAPE THE WALL LOGIC ---
         
-        # Helper to log what we see
         def log_status(step_name):
             val = get_ohlc_values()
             if val:
@@ -161,43 +150,57 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
                 log(f"      [{step_name}] NO DATA FOUND.")
             return val
 
-        log("   -> Starting Navigation Sequence...")
-        
-        # 1. Press END to jump close to the present
+        log("   -> Jump to END...")
         try:
             chart_area.press('End') 
             page.wait_for_timeout(1000)
         except: pass
         
-        last_val = log_status("After END Press")
+        last_val = log_status("After END")
+        wall_val = None
 
-        # 2. Press ArrowRight until the price stops changing (Hit the Wall)
-        log("   -> Pushing RIGHT to find the absolute latest candle...")
-        
-        # Increased limit to 200 to ensure we hit the wall even if far back
+        # 1. PUSH RIGHT TO THE WALL
+        log("   -> Pushing RIGHT to hit the absolute edge...")
         for i in range(200): 
             chart_area.press('ArrowRight')
-            page.wait_for_timeout(200) # Short wait for update
+            # Increased wait to 300ms to ensure UI updates and we don't get false "walls"
+            page.wait_for_timeout(300) 
             
             curr_val = log_status(f"Right Step {i+1}")
             
-            # If data is stable (no change) AND we actually have data, we hit the edge
             if curr_val == last_val and curr_val is not None:
-                log(f"      -> Wall hit at step {i+1}. Values stopped changing.")
+                log(f"      -> Wall hit at step {i+1}. Current Live values: C={curr_val['close']}")
+                wall_val = curr_val
                 break
             
             last_val = curr_val
 
-        # 3. Step Back ONCE to get "Yesterday" (Second-to-last candle)
-        log("   -> Navigating LEFT once to get the target candle (Yesterday).")
-        chart_area.press('ArrowLeft')
-        page.wait_for_timeout(1000)
+        if not wall_val:
+            log("      -> Warning: Did not hit a stable wall after 200 steps. Using last value.")
+            wall_val = last_val
+
+        # 2. ESCAPE THE WALL (Go Left until values CHANGE)
+        log("   -> Escaping the Wall (Going Left until price changes)...")
         
-        final_ohlc = log_status("FINAL TARGET")
-        
+        final_ohlc = None
+        for i in range(10): # Try up to 10 times to step back
+            chart_area.press('ArrowLeft')
+            page.wait_for_timeout(500)
+            
+            check_val = log_status(f"Left Step {i+1}")
+            
+            # If the entire OHLC object is different, we have successfully moved to the previous candle
+            if check_val != wall_val and check_val is not None:
+                log(f"      -> SUCCESS: Left the wall. Target Found.")
+                final_ohlc = check_val
+                break
+            else:
+                log(f"      -> Still on Wall (Values identical). Pressing Left again...")
+
         if not final_ohlc: 
-            page_title = page.title()
-            raise Exception(f"Failed to retrieve OHLC values. Page Title: {page_title}")
+            # Fallback if we never escaped (e.g. extremely flat market or error)
+            log("      -> Could not escape wall values. Using last read.")
+            final_ohlc = wall_val
 
         if "/" in asset_name:
             price_format = ",.4f"
