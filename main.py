@@ -73,7 +73,7 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         page.set_viewport_size({"width": 1920, "height": 1080})
         log(f"Processing Price Data for {asset_name}...")
         
-        # We use the full symbol (e.g. EIGHTCAP:XAUUSD) as requested
+        # Use full symbol to get specific broker data (EIGHTCAP:)
         url = f"https://www.tradingview.com/chart/?symbol={asset_symbol.replace(':', '%3A')}&interval=1D"
         log(f"   -> Loading Chart: {url}")
         page.goto(url, wait_until="domcontentloaded", timeout=90000)
@@ -106,7 +106,6 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         chart_area = page.locator("div.chart-gui-wrapper")
         
         log("   -> Activating chart area...")
-        # --- FIX 1: Indentation Fixed Here ---
         try:
             # Click slightly offset from center to avoid center-screen modals
             chart_area.click(position={'x': 1000, 'y': 500}, force=True) 
@@ -115,15 +114,31 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
 
         def get_ohlc_values():
             try:
-                # Attempt to get OHLC text. 
-                # We use specific regex to avoid grabbing random numbers from the page.
-                o_text = page.get_by_text(re.compile(r"^O[\d.,]+")).first.inner_text(timeout=500)
-                h_text = page.get_by_text(re.compile(r"^H[\d.,]+")).first.inner_text(timeout=500)
-                l_text = page.get_by_text(re.compile(r"^L[\d.,]+")).first.inner_text(timeout=500)
-                c_text = page.get_by_text(re.compile(r"^C[\d.,]+")).first.inner_text(timeout=500)
+                # Use regex to find O, H, L, C followed immediately by numbers in the body text
+                # This is more robust than selecting by specific DOM elements which change class names
+                body_text = page.locator("body").inner_text()
+                
+                o_match = re.search(r"O([\d.,]+)", body_text)
+                h_match = re.search(r"H([\d.,]+)", body_text)
+                l_match = re.search(r"L([\d.,]+)", body_text)
+                c_match = re.search(r"C([\d.,]+)", body_text)
+
+                if o_match and h_match and l_match and c_match:
+                    o_text = o_match.group(1)
+                    h_text = h_match.group(1)
+                    l_text = l_match.group(1)
+                    c_text = c_match.group(1)
+                else:
+                    # Fallback to Playwright text locators if regex fails
+                    o_text = page.get_by_text(re.compile(r"^O[\d.,]+")).first.inner_text(timeout=500)
+                    h_text = page.get_by_text(re.compile(r"^H[\d.,]+")).first.inner_text(timeout=500)
+                    l_text = page.get_by_text(re.compile(r"^L[\d.,]+")).first.inner_text(timeout=500)
+                    c_text = page.get_by_text(re.compile(r"^C[\d.,]+")).first.inner_text(timeout=500)
                 
                 def clean_val(txt):
-                    return float(re.sub(r"[^\d.]", "", txt.replace(",", "")))
+                    # Remove the letter and commas, keep digits and decimal
+                    clean = re.sub(r"[^\d.]", "", txt.replace(",", ""))
+                    return float(clean)
 
                 return {
                     "open": clean_val(o_text),
@@ -133,44 +148,45 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
                 }
             except Exception: return None
 
-        log("   -> Finding the most recent historical candle...")
+        # --- NEW NAVIGATION LOGIC ---
+        log("   -> Finding the latest candle...")
+        
+        # 1. Press END to jump close to the present
         try:
             chart_area.press('End') 
             page.wait_for_timeout(1000)
         except: pass
 
-        # --- FIX 2: Smart Navigation Logic ---
-        # 1. Crypto (BTC/ETH/SOL) is 24/7 -> 'End' is Today. We need 'Left' for Yesterday.
-        # 2. Weekday (Mon-Fri) -> 'End' is Today/Live. We need 'Left' for Yesterday.
-        # 3. Weekend (Sat/Sun) for Non-Crypto -> 'End' is Friday (Closed). We STAY there.
+        # 2. Press ArrowRight until the price stops changing (Hit the Wall)
+        #    This ensures we are strictly at the latest available candle (Today/Live).
+        log("   -> Ensuring we are at the rightmost edge...")
         
-        is_crypto = "BTC" in asset_symbol or "ETH" in asset_symbol or "SOL" in asset_symbol
-        today_weekday = datetime.now().weekday() # 5=Sat, 6=Sun
-        is_weekend = today_weekday >= 5
+        last_seen_ohlc = get_ohlc_values()
+        
+        # Safety limit of 15 steps to prevent infinite loop
+        for _ in range(15): 
+            chart_area.press('ArrowRight')
+            page.wait_for_timeout(200) # Short wait for UI update
+            
+            current_ohlc = get_ohlc_values()
+            
+            # If data is stable (no change), we hit the edge
+            if current_ohlc == last_seen_ohlc and current_ohlc is not None:
+                break
+            
+            last_seen_ohlc = current_ohlc
 
-        if is_crypto:
-            log("      -> Asset is Crypto. Navigating LEFT to get previous daily close.")
-            chart_area.press('ArrowLeft')
-        elif not is_weekend:
-            log("      -> Weekday trading. Navigating LEFT to get previous close.")
-            chart_area.press('ArrowLeft')
-        else:
-            log("      -> Weekend TradFi. Staying on 'End' candle (Friday close).")
-
+        # 3. Step Back ONCE to get "Yesterday" (Second-to-last candle)
+        log("   -> Navigating LEFT once to get the second-to-last candle.")
+        chart_area.press('ArrowLeft')
         page.wait_for_timeout(1000)
         
         final_ohlc = get_ohlc_values()
         
-        # Fallback: Wiggle if we missed the data
-        if not final_ohlc:
-            chart_area.press('ArrowLeft')
-            page.wait_for_timeout(500)
-            final_ohlc = get_ohlc_values()
-
         if not final_ohlc: 
-            # Capture title to see what asset actually loaded
+            # Capture title to see what asset actually loaded in case of error
             page_title = page.title()
-            raise Exception(f"Failed to retrieve OHLC. Page Title: {page_title}")
+            raise Exception(f"Failed to retrieve OHLC values. Page Title: {page_title}")
 
         if "/" in asset_name:
             price_format = ",.4f"
@@ -191,7 +207,6 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
 
     except Exception as e:
         log(f"!!! ERROR processing {asset_name}: {e}")
-        # Capture screenshot on error for debugging
         try:
             timestamp = datetime.now().strftime("%H%M%S")
             page.screenshot(path=f"error_{asset_name}_{timestamp}.png")
