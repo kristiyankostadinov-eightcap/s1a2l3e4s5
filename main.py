@@ -73,7 +73,7 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         page.set_viewport_size({"width": 1920, "height": 1080})
         log(f"Processing Price Data for {asset_name}...")
         
-        page.goto(f"https://www.tradingview.com/chart/?symbol={asset_symbol.replace(':', '%3A')}", wait_until="domcontentloaded", timeout=90000)
+        page.goto(f"https://www.tradingview.com/chart/?symbol={asset_symbol.replace(':', '%3A')}&interval=1D", wait_until="domcontentloaded", timeout=90000)
         
         log("   -> Clearing potential popups...")
         try:
@@ -138,6 +138,8 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         chart_area.press('End') 
         page.wait_for_timeout(1000)
         
+        chart_area.press('ArrowLeft')
+        page.wait_for_timeout(500)
         
         final_ohlc = get_ohlc_values()
         
