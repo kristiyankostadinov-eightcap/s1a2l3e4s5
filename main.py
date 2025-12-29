@@ -73,39 +73,50 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         page.set_viewport_size({"width": 1920, "height": 1080})
         log(f"Processing Price Data for {asset_name}...")
         
-        page.goto(f"https://www.tradingview.com/chart/?symbol={asset_symbol.replace(':', '%3A')}&interval=1D", wait_until="domcontentloaded", timeout=90000)
+        # We use the full symbol (e.g. EIGHTCAP:XAUUSD) as requested
+        url = f"https://www.tradingview.com/chart/?symbol={asset_symbol.replace(':', '%3A')}&interval=1D"
+        log(f"   -> Loading Chart: {url}")
+        page.goto(url, wait_until="domcontentloaded", timeout=90000)
         
-        log("   -> Clearing potential popups...")
+        # --- NUCLEAR POPUP REMOVAL ---
+        # Inject CSS to force hide all known TradingView dialogs/popups
+        log("   -> Injecting anti-popup CSS...")
         try:
-            page.wait_for_timeout(3000) 
+            page.add_style_tag(content="""
+                div[class*="dialog"], div[class*="popup"], div[class*="banner"], 
+                div[class*="toast"], div[id*="overlap-manager"], 
+                div[data-role="toast-container"], .tv-dialog { 
+                    display: none !important; 
+                    pointer-events: none !important; 
+                    visibility: hidden !important;
+                }
+            """)
+        except Exception as e:
+            log(f"      -> CSS injection warning: {e}")
 
+        # Wait for chart to stabilize
+        page.wait_for_timeout(5000)
+
+        # Clear any potential keyboard-trapping overlays
+        try:
             page.keyboard.press("Escape")
             page.wait_for_timeout(500)
-
-            cookie_btn = page.get_by_role("button", name="Accept all")
-            if cookie_btn.is_visible():
-                cookie_btn.click()
-                log("      -> Cookie banner accepted.")
-
-            overlays = page.locator('div[data-name="overlap-manager-root"] button[class*="close"], button[aria-label="Close"], button[name="Got it!"]')
-            if overlays.count() > 0:
-                for i in range(overlays.count()):
-                    if overlays.nth(i).is_visible():
-                        overlays.nth(i).click(force=True)
-                        log("      -> Closed an overlay/popup.")
-                        page.wait_for_timeout(500)
-                        
-        except Exception as e:
-            log(f"      -> Warning during popup clearing: {e}")
+        except: pass
 
         chart_area = page.locator("div.chart-gui-wrapper")
         
         log("   -> Activating chart area...")
-        # --- FIX 1: Indentation Corrected Here ---
-        chart_area.click(position={'x': 1700, 'y': 500}, force=True)
-        
+        # --- FIX 1: Indentation Fixed Here ---
+        try:
+            # Click slightly offset from center to avoid center-screen modals
+            chart_area.click(position={'x': 1000, 'y': 500}, force=True) 
+        except:
+            log("      -> Warning: direct click failed, attempting fallback.")
+
         def get_ohlc_values():
             try:
+                # Attempt to get OHLC text. 
+                # We use specific regex to avoid grabbing random numbers from the page.
                 o_text = page.get_by_text(re.compile(r"^O[\d.,]+")).first.inner_text(timeout=500)
                 h_text = page.get_by_text(re.compile(r"^H[\d.,]+")).first.inner_text(timeout=500)
                 l_text = page.get_by_text(re.compile(r"^L[\d.,]+")).first.inner_text(timeout=500)
@@ -123,43 +134,43 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
             except Exception: return None
 
         log("   -> Finding the most recent historical candle...")
-        chart_area.press('Home') 
-        page.wait_for_timeout(500)
-        chart_area.press('End')  
-        page.wait_for_timeout(1000)
+        try:
+            chart_area.press('End') 
+            page.wait_for_timeout(1000)
+        except: pass
 
         # --- FIX 2: Smart Navigation Logic ---
-        # If it's Crypto (BTC/ETH/SOL), market is always open, so 'End' is Today. We need 'Left' for Yesterday.
-        # If it's TradFi (Gold/Stocks) AND it's the weekend (Sat/Sun), 'End' is likely Friday. We stay there.
+        # 1. Crypto (BTC/ETH/SOL) is 24/7 -> 'End' is Today. We need 'Left' for Yesterday.
+        # 2. Weekday (Mon-Fri) -> 'End' is Today/Live. We need 'Left' for Yesterday.
+        # 3. Weekend (Sat/Sun) for Non-Crypto -> 'End' is Friday (Closed). We STAY there.
         
         is_crypto = "BTC" in asset_symbol or "ETH" in asset_symbol or "SOL" in asset_symbol
-        today_weekday = datetime.now().weekday() # 0=Mon, 5=Sat, 6=Sun
+        today_weekday = datetime.now().weekday() # 5=Sat, 6=Sun
         is_weekend = today_weekday >= 5
 
         if is_crypto:
-            # Crypto is 24/7. 'End' is 'Now'. 'Left' is 'Yesterday'.
             log("      -> Asset is Crypto. Navigating LEFT to get previous daily close.")
             chart_area.press('ArrowLeft')
         elif not is_weekend:
-            # Weekday TradFi. 'End' is 'Today/Live'. 'Left' is 'Yesterday'.
             log("      -> Weekday trading. Navigating LEFT to get previous close.")
             chart_area.press('ArrowLeft')
         else:
-            # Weekend TradFi. 'End' is 'Friday Close'. We stay here.
             log("      -> Weekend TradFi. Staying on 'End' candle (Friday close).")
 
-        page.wait_for_timeout(500)
+        page.wait_for_timeout(1000)
         
         final_ohlc = get_ohlc_values()
         
-        # Fallback if first read failed
+        # Fallback: Wiggle if we missed the data
         if not final_ohlc:
             chart_area.press('ArrowLeft')
-            page.wait_for_timeout(200)
+            page.wait_for_timeout(500)
             final_ohlc = get_ohlc_values()
 
         if not final_ohlc: 
-            raise Exception("Failed to retrieve final OHLC values after navigation.")
+            # Capture title to see what asset actually loaded
+            page_title = page.title()
+            raise Exception(f"Failed to retrieve OHLC. Page Title: {page_title}")
 
         if "/" in asset_name:
             price_format = ",.4f"
