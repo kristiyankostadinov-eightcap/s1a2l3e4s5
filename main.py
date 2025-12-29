@@ -101,17 +101,15 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         chart_area = page.locator("div.chart-gui-wrapper")
         
         log("   -> Activating chart area...")
-chart_area.click(position={'x': 1700, 'y': 500}, force=True)
-        
+        # --- FIX 1: Indentation Corrected Here ---
+        chart_area.click(position={'x': 1700, 'y': 500}, force=True)
         
         def get_ohlc_values():
             try:
-                
                 o_text = page.get_by_text(re.compile(r"^O[\d.,]+")).first.inner_text(timeout=500)
                 h_text = page.get_by_text(re.compile(r"^H[\d.,]+")).first.inner_text(timeout=500)
                 l_text = page.get_by_text(re.compile(r"^L[\d.,]+")).first.inner_text(timeout=500)
                 c_text = page.get_by_text(re.compile(r"^C[\d.,]+")).first.inner_text(timeout=500)
-                
                 
                 def clean_val(txt):
                     return float(re.sub(r"[^\d.]", "", txt.replace(",", "")))
@@ -124,25 +122,37 @@ chart_area.click(position={'x': 1700, 'y': 500}, force=True)
                 }
             except Exception: return None
 
-        
         log("   -> Finding the most recent historical candle...")
         chart_area.press('Home') 
         page.wait_for_timeout(500)
         chart_area.press('End')  
         page.wait_for_timeout(1000)
 
+        # --- FIX 2: Smart Navigation Logic ---
+        # If it's Crypto (BTC/ETH/SOL), market is always open, so 'End' is Today. We need 'Left' for Yesterday.
+        # If it's TradFi (Gold/Stocks) AND it's the weekend (Sat/Sun), 'End' is likely Friday. We stay there.
         
-        last_known_close = 0.0
-        
-        
-        chart_area.press('End') 
-        page.wait_for_timeout(1000)
-        
-        chart_area.press('ArrowLeft')
+        is_crypto = "BTC" in asset_symbol or "ETH" in asset_symbol or "SOL" in asset_symbol
+        today_weekday = datetime.now().weekday() # 0=Mon, 5=Sat, 6=Sun
+        is_weekend = today_weekday >= 5
+
+        if is_crypto:
+            # Crypto is 24/7. 'End' is 'Now'. 'Left' is 'Yesterday'.
+            log("      -> Asset is Crypto. Navigating LEFT to get previous daily close.")
+            chart_area.press('ArrowLeft')
+        elif not is_weekend:
+            # Weekday TradFi. 'End' is 'Today/Live'. 'Left' is 'Yesterday'.
+            log("      -> Weekday trading. Navigating LEFT to get previous close.")
+            chart_area.press('ArrowLeft')
+        else:
+            # Weekend TradFi. 'End' is 'Friday Close'. We stay here.
+            log("      -> Weekend TradFi. Staying on 'End' candle (Friday close).")
+
         page.wait_for_timeout(500)
         
         final_ohlc = get_ohlc_values()
         
+        # Fallback if first read failed
         if not final_ohlc:
             chart_area.press('ArrowLeft')
             page.wait_for_timeout(200)
