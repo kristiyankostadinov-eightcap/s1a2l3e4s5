@@ -11,6 +11,14 @@
       ]
     },
     {
+      "name": "Gold", "symbol": "EIGHTCAP:XAGUSD",
+      "search_queries": [
+           "(Silver OR XAGUSD) AND (inflation OR \"interest rates\" OR \"Federal Reserve\" OR \"industrial demand\" OR \"solar energy\" OR \"supply deficit\")",
+    "Silver price",
+    "\"Gold-Silver ratio\""
+      ]
+    },
+    {
       "name": "Spot Brent Crude Oil", "symbol": "EIGHTCAP:UKOUSD",
       "search_queries": [
         "(\"Brent Crude\" OR Oil) AND (OPEC OR \"oil supply\" OR inventories OR \"Middle East\")",
