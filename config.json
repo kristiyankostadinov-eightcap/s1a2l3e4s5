@@ -11,7 +11,7 @@
       ]
     },
     {
-      "name": "Gold", "symbol": "EIGHTCAP:XAGUSD",
+      "name": "Silver", "symbol": "EIGHTCAP:XAGUSD",
       "search_queries": [
            "(Silver OR XAGUSD) AND (inflation OR \"interest rates\" OR \"Federal Reserve\" OR \"industrial demand\" OR \"solar energy\" OR \"supply deficit\")",
     "Silver price",
