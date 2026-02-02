@@ -1,6 +1,11 @@
 {
   "news_config": {
-    "ai_model": "meta-llama/llama-3.3-70b-instruct:free"
+    "ai_model": [
+      "meta-llama/llama-3.3-70b-instruct-free", 
+      "google/gemini-2.0-flash-lite-preview-02-05:free",
+      "tngtech/deepseek-r1t2-chimera:free",
+      "z-ai/glm-4.5-air:free"
+    ]
   },
   "assets": [
     {
