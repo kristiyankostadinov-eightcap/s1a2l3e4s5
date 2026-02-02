@@ -163,7 +163,6 @@ def fetch_tradingview_yesterday_data(browser: Browser, asset_name: str, asset_sy
         log("   -> Pushing RIGHT to hit the absolute edge...")
         for i in range(200): 
             chart_area.press('ArrowRight')
-            # Increased wait to 300ms to ensure UI updates and we don't get false "walls"
             page.wait_for_timeout(300) 
             
             curr_val = log_status(f"Right Step {i+1}")
@@ -267,69 +266,92 @@ def fetch_and_scrape_news(browser: Browser, google_context: BrowserContext, sear
     except Exception as e:
         log(f"!!! ERROR fetching news for query '{search_queries[0]}': {e}"); return []
 
-def generate_market_summary(scraped_articles, asset_name, api_key, model):
+# --- IMPROVED AI FUNCTION (Multi-Model Support) ---
+def generate_market_summary(scraped_articles, asset_name, api_key, models):
     """
-    Generates a financial market summary using an AI model.
+    Generates a financial market summary, trying multiple models if one fails.
     """
     if not api_key:
         return "**ERROR: API key is missing.**"
     if not scraped_articles:
-        # This is not an error, but a valid state for the report.
         return "No relevant news articles were found to generate a summary."
 
+    # Ensure models is a list, even if the user only put one string in config
+    if isinstance(models, str):
+        models = [models]
+
     log(f"Aggregating {len(scraped_articles)} articles about {asset_name} for AI summary...")
+    
+    # Prepare the prompt once
     dossier = "".join(
         [f"--- ARTICLE {i+1}: {a['title']} ---\n{a['body']}\n\n" for i, a in enumerate(scraped_articles)]
     )
     
     prompt = f"""
 ### ROLE ###
-You are an expert financial analyst. Your task is to analyze news articles about {asset_name} and generate a visually structured, concise market briefing for a busy sales agent.
+You are an expert financial analyst. Your task is to analyze news articles about {asset_name} and generate a visually structured, concise market briefing.
 
 ### INSTRUCTIONS ###
-1. Your tone must be professional, direct, and highly scannable.
-2. Use Markdown for formatting.
-3. **Bold** key figures, price levels, and critical terms (e.g., **$220**, **bullish momentum**, **hawkish**).
-4. Strictly follow the structure and style of the example below.
+1. Tone: Professional, direct, scannable.
+2. Format: Markdown.
+3. Bold key figures and terms.
+4. STRICTLY follow the structure below.
 
-### EXAMPLE OF PERFECT OUTPUT ###
+### EXAMPLE OUTPUT ###
 ### Gold (XAU/USD) Market Briefing
-
-* **Key Drivers:** Persistent U.S. inflation data is increasing bets on a more **hawkish** Federal Reserve, strengthening the dollar.
-* **Price Action:** Broke below the key psychological level of **$2,300**, showing significant **bearish** momentum.
-* **Technical Outlook:** Immediate support is near the 50-day moving average at **$2,280**, with resistance at **$2,300**.
-
+* **Key Drivers:** Inflation data suggests a **hawkish** Fed.
+* **Price Action:** Broke below **$2,300**, bearish momentum.
+* **Technical Outlook:** Support at **$2,280**.
 ---
 **Overall Sentiment:** Negative 📉
 
 ### YOUR TASK ###
-Now, generate the same report for **{asset_name}** based on the following articles. Your output must be in Markdown and match the example's format exactly. Do not add any preamble or explanation.
+Generate the report for **{asset_name}**.
 
 ### ARTICLES ###
 {dossier}
 """
 
-    try:
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            json={"model": model, "messages": [{"role": "user", "content": prompt}]},
-            timeout=180
-        )
-        response.raise_for_status()
-        raw_text = response.json()['choices'][0]['message']['content'].strip()
-        
-        # THIS IS THE FIX for '\n' artifacts.
-        cleaned_text = raw_text.replace('\\n', '\n')
-        
-        return cleaned_text
+    # --- LOOP THROUGH MODELS ---
+    for model in models:
+        log(f"   -> Attempting AI Summary using model: {model}...")
+        try:
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}", 
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://github.com/YourRepo",
+                },
+                json={"model": model, "messages": [{"role": "user", "content": prompt}]},
+                timeout=180
+            )
+            
+            # Custom Error Handling for Model Switching
+            if response.status_code == 404:
+                log(f"      -> Model {model} not found (404). Trying next backup...")
+                continue # Skip to the next model in the list
+            
+            if response.status_code != 200:
+                log(f"      -> API Error {response.status_code}: {response.text}")
+                continue # Try next model on other errors too
+                
+            data = response.json()
+            if 'choices' not in data:
+                log(f"      -> Invalid response structure from {model}. Trying next...")
+                continue
 
-    except requests.exceptions.RequestException as e:
-        log(f"ERROR: AI summary request failed due to a network issue: {e}")
-        return f"ERROR: Could not connect to the AI service: {e}"
-    except Exception as e:
-        log(f"ERROR: AI summary request failed with an unexpected error: {e}")
-        return f"ERROR: An unexpected error occurred during AI summary generation: {e}"
+            raw_text = data['choices'][0]['message']['content'].strip()
+            cleaned_text = raw_text.replace('\\n', '\n')
+            
+            log(f"      -> Success with {model}!")
+            return cleaned_text
+
+        except Exception as e:
+            log(f"      -> Error with {model}: {e}. Moving to next...")
+            continue
+
+    return "ERROR: All AI models failed to generate a summary."
 
 def generate_markdown_report(all_snapshots, folder):
     date_str = datetime.now().strftime("%Y-%m-%d")
@@ -359,8 +381,9 @@ if __name__ == "__main__":
         OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
         
         assets_to_scrape = config.get('assets', [])
+        # This line captures the model (or list of models) from config
         ai_model = config['news_config']['ai_model']
-        log(f"Using AI Model: {ai_model}")
+        log(f"Using AI Model config: {ai_model}")
         
         all_snapshots = []
         with sync_playwright() as p:
@@ -384,6 +407,7 @@ if __name__ == "__main__":
                     log(f"News fetching took {time.time() - news_start_time:.2f} seconds.")
                     
                     ai_start_time = time.time()
+                    # The ai_model variable (list or string) is passed here automatically
                     market_summary = generate_market_summary(related_news, asset['name'], OPENROUTER_API_KEY, ai_model)
                     log(f"AI summarization took {time.time() - ai_start_time:.2f} seconds.")
 
